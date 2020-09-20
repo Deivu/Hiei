@@ -27,13 +27,13 @@ dependencies {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'haruna.Sortie',
+                'Main-Class': '',
                 'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
-                'Implementation-Title': 'Haruna',
+                'Implementation-Title': 'Hiel',
                 'Implementation-Version': version
         )
     }
-    archiveName 'haruna.jar'
+    archiveName 'hiel.jar'
     from {
         configurations
                 .compile
