@@ -4,7 +4,7 @@ plugins {
     id 'java'
 }
 
-group 'hiel'
+group 'hiei'
 version '0.0.1'
 
 sourceCompatibility = 1.8
@@ -29,11 +29,11 @@ jar {
         attributes(
                 'Main-Class': '',
                 'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
-                'Implementation-Title': 'Hiel',
+                'Implementation-Title': 'Hiei',
                 'Implementation-Version': version
         )
     }
-    archiveName 'hiel.jar'
+    archiveName 'hiei.jar'
     from {
         configurations
                 .compile

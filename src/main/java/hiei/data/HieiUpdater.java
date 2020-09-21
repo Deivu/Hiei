@@ -1,12 +1,9 @@
-package hiel.data;
+package hiei.data;
 
-import hiel.HielServer;
-import io.vertx.core.buffer.Buffer;
+import hiei.HieiServer;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import org.json.JSONObject;
@@ -16,19 +13,19 @@ import java.io.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-public class HielUpdater {
-    private final HielServer hiel;
+public class HieiUpdater {
+    private final HieiServer hiei;
     private final String versionData;
     private final String shipData;
     private final String equipmentData;
     private final WebClient client;
 
-    public HielUpdater(HielServer hiel) throws IOException {
-        this.hiel = hiel;
+    public HieiUpdater(HieiServer hiei) throws IOException {
+        this.hiei = hiei;
         this.versionData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/version-info.json";
         this.shipData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/ships.json";
         this.equipmentData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/equipments.json";
-        this.client = WebClient.create(this.hiel.vertx, new WebClientOptions().setUserAgent("Hiel/dev"));
+        this.client = WebClient.create(this.hiei.vertx, new WebClientOptions().setUserAgent("Hiei/dev"));
     }
 
     public CompletableFuture<Boolean> shipDataNeedsUpdate() {
@@ -39,18 +36,18 @@ public class HielUpdater {
                     } catch (Throwable throwable) {
                         throw new CompletionException(throwable);
                     }
-                }, this.hiel.cachedThreadPool)
+                }, this.hiei.cachedThreadPool)
                 .thenApplyAsync(data -> {
                     try {
-                        InputStream is = new FileInputStream(this.hiel.hielStore.getDataDirectory() + this.hiel.hielStore.getShipVersionFileName());
+                        InputStream is = new FileInputStream(this.hiei.hieiStore.getDataDirectory() + this.hiei.hieiStore.getShipVersionFileName());
                         JSONObject current = new JSONObject(new JSONTokener(is));
                         return data.getInteger("version-number").equals(current.getInt("version-number"));
                     } catch (Throwable throwable) {
                         throw new CompletionException(throwable);
                     }
-                }, this.hiel.cachedThreadPool)
+                }, this.hiei.cachedThreadPool)
                 .exceptionally(throwable -> {
-                    this.hiel.hielLogger.error(throwable);
+                    this.hiei.hieiLogger.error(throwable);
                     return null;
                 });
     }
@@ -63,18 +60,18 @@ public class HielUpdater {
                     } catch (Throwable throwable) {
                         throw new CompletionException(throwable);
                     }
-                }, this.hiel.cachedThreadPool)
+                }, this.hiei.cachedThreadPool)
                 .thenApplyAsync(data -> {
                     try {
-                        InputStream is = new FileInputStream(this.hiel.hielStore.getDataDirectory() + this.hiel.hielStore.getEquipmentVersionFileName());
+                        InputStream is = new FileInputStream(this.hiei.hieiStore.getDataDirectory() + this.hiei.hieiStore.getEquipmentVersionFileName());
                         JSONObject current = new JSONObject(new JSONTokener(is));
                         return data.getInteger("version-number").equals(current.getInt("version-number"));
                     } catch (Throwable throwable) {
                         throw new CompletionException(throwable);
                     }
-                }, this.hiel.cachedThreadPool)
+                }, this.hiei.cachedThreadPool)
                 .exceptionally(throwable -> {
-                    this.hiel.hielLogger.error(throwable);
+                    this.hiei.hieiLogger.error(throwable);
                     return null;
                 });
     }

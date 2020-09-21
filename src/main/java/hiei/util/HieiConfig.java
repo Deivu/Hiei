@@ -1,6 +1,6 @@
-package hiel.util;
+package hiei.util;
 
-import hiel.HielServer;
+import hiei.HieiServer;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -10,15 +10,15 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 
-public class HielConfig {
+public class HieiConfig {
     public final int port;
     public final int threads;
     public final String pass;
     public final String routePrefix;
     public final String directory;
 
-    public HielConfig() throws FileNotFoundException, URISyntaxException {
-        File file = new File(HielServer.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    public HieiConfig() throws FileNotFoundException, URISyntaxException {
+        File file = new File(HieiServer.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         this.directory = file.getPath().replace(file.getName(), "");
         InputStream is = new FileInputStream(this.directory + "config.json");
         JSONObject config = new JSONObject(new JSONTokener(is));

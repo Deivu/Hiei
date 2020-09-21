@@ -1,33 +1,27 @@
-package hiel;
+package hiei;
 
-import hiel.data.HielCache;
-import hiel.data.HielStore;
-import hiel.data.HielUpdater;
-import hiel.util.HielConfig;
-import hiel.util.HielLogger;
+import hiei.data.HieiCache;
+import hiei.data.HieiStore;
+import hiei.data.HieiUpdater;
+import hiei.util.HieiConfig;
+import hiei.util.HieiLogger;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.StaticHandler;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class HielServer {
-    public final HielLogger hielLogger;
-    public final HielConfig hielConfig;
+public class HieiServer {
+    public final HieiLogger hieiLogger;
+    public final HieiConfig hieiConfig;
     public final Vertx vertx;
-    public final HielStore hielStore;
-    public final HielUpdater hielUpdater;
-    public final HielCache hielCache;
+    public final HieiStore hieiStore;
+    public final HieiUpdater hieiUpdater;
+    public final HieiCache hieiCache;
     public final ExecutorService singleThreadScheduler;
     public final ExecutorService cachedThreadPool;
 
@@ -35,13 +29,13 @@ public class HielServer {
     private final Router mainRouter;
     private final Router apiRoutes;
 
-    public HielServer() throws IOException, URISyntaxException {
-        this.hielLogger = new HielLogger();
-        this.hielConfig = new HielConfig();
-        this.vertx = Vertx.vertx(new VertxOptions().setWorkerPoolSize(this.hielConfig.threads));
-        this.hielStore = new HielStore(this);
-        this.hielUpdater = new HielUpdater(this);
-        this.hielCache = new HielCache(this);
+    public HieiServer() throws IOException, URISyntaxException {
+        this.hieiLogger = new HieiLogger();
+        this.hieiConfig = new HieiConfig();
+        this.vertx = Vertx.vertx(new VertxOptions().setWorkerPoolSize(this.hieiConfig.threads));
+        this.hieiStore = new HieiStore(this);
+        this.hieiUpdater = new HieiUpdater(this);
+        this.hieiCache = new HieiCache(this);
         this.singleThreadScheduler = Executors.newSingleThreadScheduledExecutor();
         this.cachedThreadPool= Executors.newCachedThreadPool();
         this.server = this.vertx.createHttpServer();
@@ -49,7 +43,7 @@ public class HielServer {
         this.apiRoutes = Router.router(vertx);
     }
 
-    public HielServer buildRoute() {
+    public HieiServer buildRoute() {
         /*
         apiRoutes.route().handler(BodyHandler.create());
         apiRoutes.route(HttpMethod.POST, "/newVote")
@@ -70,12 +64,12 @@ public class HielServer {
                 .handler(StaticHandler.create().setIndexPage("haruna.html"))
                 .failureHandler(this.routeHandler::triggerFail)
                 .enable();
-        mainRouter.mountSubRouter(this.hielConfig.routePrefix, apiRoutes);
+        mainRouter.mountSubRouter(this.hieiConfig.routePrefix, apiRoutes);
          */
         return this;
     }
 
     public void startServer() {
-        server.requestHandler(this.mainRouter).listen(this.hielConfig.port);
+        server.requestHandler(this.mainRouter).listen(this.hieiConfig.port);
     }
 }

@@ -1,11 +1,11 @@
-package hiel.util;
+package hiei.util;
 
-import hiel.HielServer;
+import hiei.HieiServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HielLogger {
-    private final Logger log = LoggerFactory.getLogger(HielServer.class);
+public class HieiLogger {
+    private final Logger log = LoggerFactory.getLogger(HieiServer.class);
 
     public void debug(String debug) { log.info(debug); }
     public void info(String info) { log.info(info); }
