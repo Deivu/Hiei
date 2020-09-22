@@ -16,18 +16,19 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile group: 'com.h2database', name: 'h2', version: '1.4.199'
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
     compile("io.vertx:vertx-core:3.9.2")
     compile("io.vertx:vertx-web:3.9.2")
     compile("io.vertx:vertx-web-client:3.9.2")
     compile("org.slf4j:slf4j-api:1.7.26")
     compile("org.slf4j:slf4j-log4j12:1.7.26")
-    compile("org.json:json:20180813")
+    compile("me.xdrop:fuzzywuzzy:1.3.1")
 }
 
 jar {
     manifest {
         attributes(
-                'Main-Class': '',
+                'Main-Class': 'hiei.HieiMain',
                 'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                 'Implementation-Title': 'Hiei',
                 'Implementation-Version': version

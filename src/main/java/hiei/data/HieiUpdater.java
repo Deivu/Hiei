@@ -6,8 +6,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +19,7 @@ public class HieiUpdater {
     private final String equipmentData;
     private final WebClient client;
 
-    public HieiUpdater(HieiServer hiei) throws IOException {
+    public HieiUpdater(HieiServer hiei) {
         this.hiei = hiei;
         this.versionData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/version-info.json";
         this.shipData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/ships.json";
@@ -38,10 +37,9 @@ public class HieiUpdater {
                     }
                 }, this.hiei.cachedThreadPool)
                 .thenApplyAsync(data -> {
-                    try {
-                        InputStream is = new FileInputStream(this.hiei.hieiStore.getDataDirectory() + this.hiei.hieiStore.getShipVersionFileName());
-                        JSONObject current = new JSONObject(new JSONTokener(is));
-                        return data.getInteger("version-number").equals(current.getInt("version-number"));
+                    try (InputStream is = new FileInputStream(this.hiei.hieiStore.getDataDirectory() + this.hiei.hieiStore.getShipVersionFileName())) {
+                        JsonObject current = new JsonObject(IOUtils.toString(is));
+                        return current.isEmpty() || data.getInteger("version-number").equals(current.getInteger("version-number"));
                     } catch (Throwable throwable) {
                         throw new CompletionException(throwable);
                     }
@@ -62,10 +60,9 @@ public class HieiUpdater {
                     }
                 }, this.hiei.cachedThreadPool)
                 .thenApplyAsync(data -> {
-                    try {
-                        InputStream is = new FileInputStream(this.hiei.hieiStore.getDataDirectory() + this.hiei.hieiStore.getEquipmentVersionFileName());
-                        JSONObject current = new JSONObject(new JSONTokener(is));
-                        return data.getInteger("version-number").equals(current.getInt("version-number"));
+                    try (InputStream is = new FileInputStream(this.hiei.hieiStore.getDataDirectory() + this.hiei.hieiStore.getEquipmentVersionFileName())) {
+                         JsonObject current = new JsonObject(IOUtils.toString(is));
+                         return current.isEmpty() || data.getInteger("version-number").equals(current.getInteger("version-number"));
                     } catch (Throwable throwable) {
                         throw new CompletionException(throwable);
                     }
@@ -152,7 +149,10 @@ public class HieiUpdater {
                             }
                             throw throwable;
                         }
-                        result.complete(response.result().bodyAsJsonArray());
+                        JsonObject unparsedResponse = response.result().bodyAsJsonObject();
+                        JsonArray parsedResponse = new JsonArray();
+                        for (String key : unparsedResponse.fieldNames()) parsedResponse.add(unparsedResponse.getJsonObject(key));
+                        result.complete(parsedResponse);
                     } catch (Throwable throwable) {
                         result.completeExceptionally(throwable);
                     }

@@ -1,30 +1,36 @@
 package hiei.data;
 
 import hiei.HieiServer;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import hiei.struct.HieiEquip;
+import hiei.struct.HieiShip;
+import io.vertx.core.json.JsonArray;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class HieiCache {
     private final HieiServer hiei;
 
-    private List<JSONObject> ships;
-    private List<JSONObject> equips;
+    public final CopyOnWriteArrayList<HieiShip> ships;
+    public final CopyOnWriteArrayList<HieiEquip> equips;
 
-    public HieiCache(HieiServer hiei) throws FileNotFoundException {
+    public HieiCache(HieiServer hiei) {
         this.hiei = hiei;
-        this.ships = new ArrayList<>();
-        this.equips = new ArrayList<>();
-        JSONArray localShips = this.hiei.hieiStore.getLocalShipsData();
-        if (!localShips.isEmpty()) {
-            for (int i = 0; i < localShips.length(); i++) this.ships.add(localShips.getJSONObject(i));
-        }
-        JSONArray localEquipments = this.hiei.hieiStore.getLocalEquipmentsData();
-        if (!localEquipments.isEmpty()) {
-            for (int i = 0; i < localEquipments.length(); i++) this.equips.add(localEquipments.getJSONObject(i));
-        }
+        this.ships = new CopyOnWriteArrayList<>();
+        this.equips = new CopyOnWriteArrayList<>();
+    }
+
+    public void updateShipCache(JsonArray data) {
+        if (data.isEmpty()) return;
+        if (!this.ships.isEmpty()) this.ships.clear();
+        for (int i = 0; i < data.size(); i++) this.ships.add(new HieiShip(data.getJsonObject(i)));
+    }
+
+    public void updateEquipCache(JsonArray data) {
+        if (data.isEmpty()) return;
+        if (!this.equips.isEmpty()) this.equips.clear();
+        for (int i = 0; i < data.size(); i++) this.equips.add(new HieiEquip(data.getJsonObject(i)));
     }
 }
