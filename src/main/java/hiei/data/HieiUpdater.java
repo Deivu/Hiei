@@ -9,6 +9,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -39,7 +40,7 @@ public class HieiUpdater {
                 .thenApplyAsync(data -> {
                     Buffer buffer = this.hiei.hieiStore.getFileSystem().readFileBlocking(this.hiei.hieiStore.getDataDirectory() + this.hiei.hieiStore.getShipVersionFileName());
                     Gson gson = new Gson();
-                    JsonObject current = gson.fromJson(buffer.toString(), JsonObject.class);
+                    JsonObject current = gson.fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonObject.class);
                     if (current == null) return true;
                     current = current.getAsJsonObject();
                     return current.get("version-number") == null|| !data.get("version-number").getAsBigInteger().equals(current.get("version-number").getAsBigInteger());
@@ -62,7 +63,7 @@ public class HieiUpdater {
                 .thenApplyAsync(data -> {
                     Buffer buffer = this.hiei.hieiStore.getFileSystem().readFileBlocking(this.hiei.hieiStore.getDataDirectory() + this.hiei.hieiStore.getEquipmentVersionFileName());
                     Gson gson = new Gson();
-                    JsonObject current = gson.fromJson(buffer.toString(), JsonObject.class);
+                    JsonObject current = gson.fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonObject.class);
                     if (current == null) return true;
                     current = current.getAsJsonObject();
                     return current.get("version-number") == null|| !data.get("version-number").getAsBigInteger().equals(current.get("version-number").getAsBigInteger());
@@ -87,7 +88,7 @@ public class HieiUpdater {
                             throw throwable;
                         }
                         Gson gson = new Gson();
-                        JsonObject data = gson.fromJson(response.result().bodyAsString(), JsonObject.class);
+                        JsonObject data = gson.fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonObject.class);
                         result.complete(data.get("ships").getAsJsonObject());
                     } catch (Throwable throwable) {
                         result.completeExceptionally(throwable);
@@ -110,7 +111,7 @@ public class HieiUpdater {
                             throw throwable;
                         }
                         Gson gson = new Gson();
-                        JsonObject data = gson.fromJson(response.result().bodyAsString(), JsonObject.class);
+                        JsonObject data = gson.fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonObject.class);
                         result.complete(data.get("equipments").getAsJsonObject());
                     } catch (Throwable throwable) {
                         result.completeExceptionally(throwable);
@@ -133,7 +134,7 @@ public class HieiUpdater {
                             throw throwable;
                         }
                         Gson gson = new Gson();
-                        result.complete(gson.fromJson(response.result().bodyAsString(), JsonArray.class));
+                        result.complete(gson.fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonArray.class));
                     } catch (Throwable throwable) {
                         result.completeExceptionally(throwable);
                     }
@@ -155,7 +156,7 @@ public class HieiUpdater {
                             throw throwable;
                         }
                         Gson gson = new Gson();
-                        JsonObject unparsedResponse = gson.fromJson(response.result().bodyAsString(), JsonObject.class);
+                        JsonObject unparsedResponse = gson.fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonObject.class);
                         JsonArray parsedResponse = new JsonArray();
                         for (String key : unparsedResponse.keySet()) parsedResponse.add(unparsedResponse.getAsJsonObject(key));
                         result.complete(parsedResponse);

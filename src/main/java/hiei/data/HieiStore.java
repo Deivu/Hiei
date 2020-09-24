@@ -7,6 +7,8 @@ import hiei.HieiServer;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 
+import java.nio.charset.StandardCharsets;
+
 public class HieiStore {
     private final HieiServer hiei;
     private final String[] files;
@@ -47,12 +49,12 @@ public class HieiStore {
 
     public JsonArray getLocalShipsData() {
         Buffer buffer = this.getFileSystem().readFileBlocking(this.dataDirectory + this.getShipDataFileName());
-        return new Gson().fromJson(buffer.toString(), JsonArray.class);
+        return new Gson().fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonArray.class);
     }
 
     public JsonArray getLocalEquipmentsData() {
         Buffer buffer = this.getFileSystem().readFileBlocking(this.dataDirectory + this.getEquipmentDataFileName());
-        return new Gson().fromJson(buffer.toString(), JsonArray.class);
+        return new Gson().fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonArray.class);
     }
 
     public void updateShipData() {

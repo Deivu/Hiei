@@ -56,6 +56,7 @@ public class HieiEndpointManager {
             context.fail(400);
             return;
         }
+        response.putHeader("content-type", "application/json; charset=utf-8");
         HieiEndpointContext hieiEndpointContext = new HieiEndpointContext(context, request, response, query);
         switch (endpoint) {
             case "searchShip":

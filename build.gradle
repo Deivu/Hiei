@@ -5,8 +5,6 @@ plugins {
 }
 
 group 'hiei'
-version '0.0.1'
-
 sourceCompatibility = 1.8
 
 repositories {
@@ -26,16 +24,23 @@ dependencies {
     compile("me.xdrop:fuzzywuzzy:1.3.1")
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+tasks.withType(Test) {
+    systemProperty "file.encoding", "UTF-8"
+}
+
 jar {
     manifest {
         attributes(
                 'Main-Class': 'hiei.HieiMain',
                 'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                 'Implementation-Title': 'Hiei',
-                'Implementation-Version': version
+                'Implementation-Version': '0.0.1'
         )
     }
-    compileJava.options.encoding = 'UTF-8'
+
     archiveName 'hiei.jar'
     from {
         configurations
