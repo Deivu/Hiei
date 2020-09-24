@@ -1,7 +1,6 @@
 package hiei.endpoints;
 
 import hiei.HieiServer;
-import hiei.endpoints.ships.SearchShip;
 import hiei.struct.HieiEndpointContext;
 import hiei.struct.HieiEndpointRouter;
 import io.vertx.core.http.HttpServerRequest;

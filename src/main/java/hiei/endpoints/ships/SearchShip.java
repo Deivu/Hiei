@@ -1,15 +1,13 @@
 package hiei.endpoints.ships;
 
+import com.google.gson.JsonArray;
 import hiei.HieiServer;
-import hiei.struct.*;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
+import hiei.struct.HieiEndpoint;
+import hiei.struct.HieiEndpointContext;
+import hiei.struct.HieiShip;
+import hiei.struct.HieiShipSearchResult;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,10 +16,13 @@ public class SearchShip extends HieiEndpoint {
 
     @Override
     public void execute(HieiEndpointContext context) {
-        context.response.end(this.search(context.queryString).encodePrettily());
+        List<HieiShip> ships = this.search(context.queryString);
+        JsonArray data = new JsonArray();
+        for (HieiShip ship : ships) data.add(ship.data);
+        context.response.end(data.toString());
     }
 
-    private JsonArray search(String input) {
+    private List<HieiShip> search(String input) {
         List<HieiShip> data = this.hiei.hieiCache.ships.stream()
                 .map(ship -> new HieiShipSearchResult(FuzzySearch.weightedRatio(input, ship.name), ship))
                 .filter(result ->  result.score > 60)
@@ -29,6 +30,6 @@ public class SearchShip extends HieiEndpoint {
                 .map(result -> result.shipData)
                 .collect(Collectors.toList());
         if (data.size() > this.hiei.hieiConfig.maxResults) data = data.subList(0, this.hiei.hieiConfig.maxResults);
-        return new JsonArray(data);
+        return data;
     }
 }

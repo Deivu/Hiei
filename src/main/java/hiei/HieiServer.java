@@ -13,19 +13,16 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class HieiServer {
+    public final Vertx vertx;
     public final HieiLogger hieiLogger;
     public final HieiConfig hieiConfig;
-    public final Vertx vertx;
     public final HieiStore hieiStore;
     public final HieiUpdater hieiUpdater;
     public final HieiCache hieiCache;
@@ -38,15 +35,16 @@ public class HieiServer {
     private final Router apiRoutes;
 
     public HieiServer() throws IOException, URISyntaxException {
+
         this.hieiLogger = new HieiLogger();
         this.hieiConfig = new HieiConfig();
         this.vertx = Vertx.vertx(new VertxOptions().setWorkerPoolSize(this.hieiConfig.threads));
         this.hieiStore = new HieiStore(this);
         this.hieiUpdater = new HieiUpdater(this);
-        this.hieiCache = new HieiCache(this);
+        this.hieiCache = new HieiCache();
         this.hieiEndpointManager = new HieiEndpointManager(this);
         this.singleThreadScheduler = Executors.newSingleThreadScheduledExecutor();
-        this.cachedThreadPool= Executors.newCachedThreadPool();
+        this.cachedThreadPool = Executors.newCachedThreadPool();
         this.server = this.vertx.createHttpServer();
         this.mainRouter = Router.router(vertx);
         this.apiRoutes = Router.router(vertx);
@@ -57,7 +55,7 @@ public class HieiServer {
                 .produces("application/json")
                 .blockingHandler(context -> this.hieiEndpointManager.executeGet("searchShip", context), false)
                 .failureHandler(this.hieiEndpointManager::executeFail)
-                .enable( );
+                .enable();
         apiRoutes.route(HttpMethod.GET, "/searchEquipment")
                 .produces("application/json")
                 .blockingHandler(context -> this.hieiEndpointManager.executeGet("searchEquipment", context), false)
@@ -71,15 +69,15 @@ public class HieiServer {
         return this;
     }
 
-    public void startServer() throws ExecutionException, InterruptedException, IOException {
+    public void startServer() throws ExecutionException, InterruptedException {
         this.hieiLogger.info("Pre-start server checks initializing....");
         if (this.hieiUpdater.shipDataNeedsUpdate().get()) {
+            this.hieiLogger.info("Downloading new ships from remote...");
             this.hieiStore.updateShipData();
-            this.hieiLogger.info("Local ship data checked!");
         }
         if (this.hieiUpdater.equipmentDataNeedsUpdate().get()) {
+            this.hieiLogger.info("Downloading new equipments from remote...");
             this.hieiStore.updateEquipmentData();
-            this.hieiLogger.info("Local equipment data checked!");
         }
         this.hieiCache.updateShipCache(this.hieiStore.getLocalShipsData());
         this.hieiLogger.info("Ship cache initialized!");

@@ -1,6 +1,6 @@
 package hiei.struct;
 
-import io.vertx.core.json.JsonObject;
+import com.google.gson.JsonObject;
 
 public class HieiEquip {
     public final String category;
@@ -9,9 +9,14 @@ public class HieiEquip {
     public final JsonObject data;
 
     public HieiEquip(JsonObject data) {
-        this.category = data.getString("category");
-        this.nationality = data.getString("nationality");
-        this.name = data.getJsonObject("names").getString("en");
-        this.data = data;
+        this.category = data.get("category").getAsString();
+        this.nationality = data.get("nationality").getAsString();
+        this.name = data.get("names").getAsJsonObject().get("en").getAsString();
+        this.data = data.deepCopy();
+    }
+
+    @Override
+    public String toString() {
+        return this.data.toString();
     }
 }

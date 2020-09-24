@@ -1,12 +1,11 @@
 package hiei.endpoints.equipments;
 
+import com.google.gson.JsonArray;
 import hiei.HieiServer;
-import hiei.struct.*;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
+import hiei.struct.HieiEndpoint;
+import hiei.struct.HieiEndpointContext;
+import hiei.struct.HieiEquip;
+import hiei.struct.HieiEquipSearchResult;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 
 import java.util.List;
@@ -17,10 +16,13 @@ public class SearchEquipment extends HieiEndpoint {
 
     @Override
     public void execute(HieiEndpointContext context) {
-        context.response.end(this.search(context.queryString).toString());
+        List<HieiEquip> equips = this.search(context.queryString);
+        JsonArray data = new JsonArray();
+        for (HieiEquip equip : equips) data.add(equip.data);
+        context.response.end(data.toString());
     }
 
-    private JsonArray search(String input) {
+    private List<HieiEquip> search(String input) {
         List<HieiEquip> data = this.hiei.hieiCache.equips.stream()
                 .map(equip -> new HieiEquipSearchResult(FuzzySearch.weightedRatio(input, equip.name), equip))
                 .filter(result ->  result.score > 60)
@@ -28,6 +30,6 @@ public class SearchEquipment extends HieiEndpoint {
                 .map(result -> result.equipData)
                 .collect(Collectors.toList());
         if (data.size() > this.hiei.hieiConfig.maxResults) data = data.subList(0, this.hiei.hieiConfig.maxResults);
-        return new JsonArray(data);
+        return data;
     }
 }

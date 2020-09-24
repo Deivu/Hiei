@@ -1,14 +1,11 @@
 package hiei.data;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import hiei.HieiServer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.apache.commons.io.IOUtils;
-
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutionException;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileSystem;
 
 public class HieiStore {
     private final HieiServer hiei;
@@ -18,29 +15,25 @@ public class HieiStore {
     private boolean isShipsUpdating;
     private boolean isEquipsUpdating;
 
-    public HieiStore(HieiServer hiei) throws IOException {
+    public HieiStore(HieiServer hiei) {
         this.hiei = hiei;
         this.files = new String[]{"ship-version.json", "equipment-version.json", "ships.json", "equipments.json"};
         this.dataDirectory = this.hiei.hieiConfig.directory + "data/";
         this.isEquipsUpdating = false;
         this.isEquipsUpdating = false;
-
-        if (new File(this.dataDirectory).mkdir())
+        if (!this.getFileSystem().existsBlocking(this.dataDirectory)) {
+            this.getFileSystem().mkdirBlocking(this.dataDirectory);
             this.hiei.hieiLogger.debug("Created '.data/' directory because it doesn't exist");
+        }
         for (String fileName : this.files) {
-            if (new File(this.dataDirectory + fileName).createNewFile()) {
-                try (FileWriter def = new FileWriter(this.dataDirectory + fileName, false)) {
-                    if (fileName.equals(this.getShipDataFileName()) || fileName.equals(this.getEquipmentDataFileName())) {
-                        def.write("[]");
-                    } else {
-                        def.write("{}");
-                    }
-                    def.flush();
-                }
+            if (!this.getFileSystem().existsBlocking(this.dataDirectory + fileName)) {
+                this.getFileSystem().createFileBlocking(this.dataDirectory + fileName);
                 this.hiei.hieiLogger.debug("Created '.data/" + fileName + "' file because it doesn't exist");
             }
         }
     }
+
+    public FileSystem getFileSystem() { return this.hiei.vertx.fileSystem(); }
 
     public String getDataDirectory() { return this.dataDirectory; }
 
@@ -52,16 +45,14 @@ public class HieiStore {
 
     public String getEquipmentDataFileName() { return this.files[3]; }
 
-    public JsonArray getLocalShipsData() throws IOException {
-        try (InputStream is = new FileInputStream(this.dataDirectory + this.getShipDataFileName())) {
-            return new JsonArray(IOUtils.toString(is));
-        }
+    public JsonArray getLocalShipsData() {
+        Buffer buffer = this.getFileSystem().readFileBlocking(this.dataDirectory + this.getShipDataFileName());
+        return new Gson().fromJson(buffer.toString(), JsonArray.class);
     }
 
-    public JsonArray getLocalEquipmentsData() throws IOException {
-        try (InputStream is = new FileInputStream(this.dataDirectory + this.getEquipmentDataFileName())) {
-            return new JsonArray(IOUtils.toString(is));
-        }
+    public JsonArray getLocalEquipmentsData() {
+        Buffer buffer = this.getFileSystem().readFileBlocking(this.dataDirectory + this.getEquipmentDataFileName());
+        return new Gson().fromJson(buffer.toString(), JsonArray.class);
     }
 
     public void updateShipData() {
@@ -71,14 +62,10 @@ public class HieiStore {
                 return;
             }
             this.isShipsUpdating = true;
-            File file = new File(this.dataDirectory + this.getShipDataFileName());
-            if (file.createNewFile()) this.hiei.hieiLogger.debug("Created '.data/" + this.getShipDataFileName() + "' file because it doesn't exist");
+            JsonObject remoteVersion = this.hiei.hieiUpdater.fetchShipVersionData().get();
             JsonArray remoteShips = this.hiei.hieiUpdater.fetchShipData().get();
-            try (FileWriter ships = new FileWriter(file, false)) {
-                ships.write(remoteShips.encodePrettily());
-                this.updateShipVersion();
-                ships.flush();
-            }
+            this.getFileSystem().writeFileBlocking(this.getDataDirectory() + this.getShipVersionFileName(), Buffer.buffer(remoteVersion.toString()));
+            this.getFileSystem().writeFileBlocking(this.getDataDirectory() + this.getShipDataFileName(), Buffer.buffer(remoteShips.toString()));
         } catch (Throwable throwable) {
             this.hiei.hieiLogger.error(throwable);
         } finally {
@@ -93,34 +80,14 @@ public class HieiStore {
                 return;
             }
             this.isEquipsUpdating = true;
-            File file = new File(this.dataDirectory + this.getEquipmentDataFileName());
-            if (file.createNewFile()) this.hiei.hieiLogger.debug("Created '.data/" + this.getEquipmentDataFileName() + "' file because it doesn't exist");
+            JsonObject remoteVersion = this.hiei.hieiUpdater.fetchEquipmentVersionData().get();
             JsonArray remoteEquips = this.hiei.hieiUpdater.fetchEquipmentData().get();
-            try (FileWriter equips = new FileWriter(file, false)) {
-                equips.write(remoteEquips.encodePrettily());
-                this.updateEquipmentVersion();
-                equips.flush();
-            }
+            this.getFileSystem().writeFileBlocking(this.getDataDirectory() + this.getEquipmentVersionFileName(), Buffer.buffer(remoteVersion.toString()));
+            this.getFileSystem().writeFileBlocking(this.getDataDirectory() + this.getEquipmentDataFileName(), Buffer.buffer(remoteEquips.toString()));
         } catch (Throwable throwable) {
             this.hiei.hieiLogger.error(throwable);
         } finally {
             this.isEquipsUpdating = false;
-        }
-    }
-
-    private void updateShipVersion() throws IOException, ExecutionException, InterruptedException {
-        JsonObject remoteVersion = this.hiei.hieiUpdater.fetchShipVersionData().get();
-        try (FileWriter version = new FileWriter( new File(this.dataDirectory + this.getShipVersionFileName()),false)) {
-            version.write(remoteVersion.encodePrettily());
-            version.flush();
-        }
-    }
-
-    private void updateEquipmentVersion() throws IOException, ExecutionException, InterruptedException {
-        JsonObject remoteVersion = this.hiei.hieiUpdater.fetchEquipmentVersionData().get();
-        try (FileWriter version = new FileWriter( new File(this.dataDirectory + this.getEquipmentVersionFileName()),false)) {
-            version.write(remoteVersion.encodePrettily());
-            version.flush();
         }
     }
 }

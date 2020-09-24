@@ -1,11 +1,11 @@
 package hiei.util;
 
-import hiei.HieiMain;
+import hiei.HieiServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HieiLogger {
-    private final Logger log = LoggerFactory.getLogger(HieiMain.class);
+    private final Logger log = LoggerFactory.getLogger(HieiServer.class);
 
     public void debug(String debug) { log.info(debug); }
 
