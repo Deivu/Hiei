@@ -14,7 +14,8 @@ public class HieiConfig {
     public final String routePrefix;
     public final String directory;
     public final int maxResults;
-    public final boolean includeAuthOnGetEndpoints;
+    public final int searchWeight;
+    public final boolean privateRest;
 
     public HieiConfig() throws IOException, URISyntaxException {
         File file = new File(HieiServer.class.getProtectionDomain().getCodeSource().getLocation().toURI());
@@ -26,7 +27,8 @@ public class HieiConfig {
             this.threads = config.containsKey("threads") ? config.getInteger("threads") : Runtime.getRuntime().availableProcessors();
             this.routePrefix = config.containsKey("routePrefix") ? "/" + config.getString("routePrefix") : "/";
             this.maxResults = config.containsKey("maxResults") ? config.getInteger("maxResults") : 5;
-            this.includeAuthOnGetEndpoints = !config.containsKey("includeAuthOnGetEndpoints") || config.getBoolean("includeAuthOnGetEndpoints");
+            this.searchWeight = config.containsKey("searchWeight") ? config.getInteger("searchWeight") : 75;
+            this.privateRest = !config.containsKey("privateRest") || config.getBoolean("privateRest");
         }
     }
 }

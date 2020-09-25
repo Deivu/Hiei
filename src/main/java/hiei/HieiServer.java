@@ -20,9 +20,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class HieiServer {
-    public final Vertx vertx;
+    public final String version;
     public final HieiLogger hieiLogger;
     public final HieiConfig hieiConfig;
+    public final Vertx vertx;
     public final HieiStore hieiStore;
     public final HieiUpdater hieiUpdater;
     public final HieiCache hieiCache;
@@ -33,9 +34,10 @@ public class HieiServer {
     private final HttpServer server;
     private final Router mainRouter;
     private final Router apiRoutes;
+    private final String[] getEndpoints;
 
     public HieiServer() throws IOException, URISyntaxException {
-
+        this.version = getClass().getPackage().getImplementationVersion() != null ? getClass().getPackage().getImplementationVersion() : "dev";
         this.hieiLogger = new HieiLogger();
         this.hieiConfig = new HieiConfig();
         this.vertx = Vertx.vertx(new VertxOptions().setWorkerPoolSize(this.hieiConfig.threads));
@@ -48,19 +50,17 @@ public class HieiServer {
         this.server = this.vertx.createHttpServer();
         this.mainRouter = Router.router(vertx);
         this.apiRoutes = Router.router(vertx);
+        this.getEndpoints = new String[]{
+                "/ship/search", "/ship/id", "/ship/rarity", "/ship/hullType", "/ship/shipClass", "/ship/nationality", "/equip/search", "/equip/nationality", "/equip/category"
+        };
     }
 
     public HieiServer buildRoute() {
-        apiRoutes.route(HttpMethod.GET, "/searchShip")
-                .produces("application/json")
-                .blockingHandler(context -> this.hieiEndpointManager.executeGet("searchShip", context), false)
-                .failureHandler(this.hieiEndpointManager::executeFail)
-                .enable();
-        apiRoutes.route(HttpMethod.GET, "/searchEquipment")
-                .produces("application/json")
-                .blockingHandler(context -> this.hieiEndpointManager.executeGet("searchEquipment", context), false)
-                .failureHandler(this.hieiEndpointManager::executeFail)
-                .enable();
+        for (String endpoint : getEndpoints)
+            apiRoutes.route(HttpMethod.GET, endpoint)
+                    .blockingHandler(context -> this.hieiEndpointManager.executeGet(endpoint, context), false)
+                    .failureHandler(this.hieiEndpointManager::executeFail)
+                    .enable();
         apiRoutes.route("/*")
                 .handler(StaticHandler.create().setIndexPage("haruna.html"))
                 .failureHandler(this.hieiEndpointManager::executeFail)

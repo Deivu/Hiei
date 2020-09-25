@@ -2,18 +2,19 @@ package hiei.endpoints;
 
 import hiei.HieiServer;
 import hiei.struct.HieiEndpointContext;
-import hiei.struct.HieiEndpointRouter;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 
 public class HieiEndpointManager {
     private final HieiServer hiei;
-    private final HieiEndpointRouter hieiEndpointRouter;
+    private final HieiShipEndpoint hieiShipEndpoint;
+    private final HieiEquipmentEndpoint hieiEquipmentEndpoint;
 
     public HieiEndpointManager(HieiServer hiei) {
         this.hiei = hiei;
-        this.hieiEndpointRouter = new HieiEndpointRouter(this.hiei);
+        this.hieiShipEndpoint = new HieiShipEndpoint(this.hiei);
+        this.hieiEquipmentEndpoint = new HieiEquipmentEndpoint(this.hiei);
     }
 
     public void executeFail(RoutingContext context) {
@@ -45,12 +46,12 @@ public class HieiEndpointManager {
         HttpServerRequest request = context.request();
         HttpServerResponse response = context.response();
         String auth = request.getHeader("authorization");
-        if (this.hiei.hieiConfig.includeAuthOnGetEndpoints && !auth.equals(this.hiei.hieiConfig.pass)) {
+        if (this.hiei.hieiConfig.privateRest && !auth.equals(this.hiei.hieiConfig.pass)) {
             response.setStatusMessage("Unauthorized");
             context.fail(401);
             return;
         }
-        String query = request.getParam("query");
+        String query = request.getParam("q");
         if (query == null) {
             response.setStatusMessage("Bad Request");
             context.fail(400);
@@ -59,11 +60,32 @@ public class HieiEndpointManager {
         response.putHeader("content-type", "application/json; charset=utf-8");
         HieiEndpointContext hieiEndpointContext = new HieiEndpointContext(context, request, response, query);
         switch (endpoint) {
-            case "searchShip":
-                this.hieiEndpointRouter.searchShip.execute(hieiEndpointContext);
+            case "/ship/search":
+                this.hieiShipEndpoint.search(hieiEndpointContext);
                 break;
-            case "searchEquipment":
-                this.hieiEndpointRouter.searchEquipment.execute(hieiEndpointContext);
+            case "/ship/id":
+                this.hieiShipEndpoint.id(hieiEndpointContext);
+                break;
+            case "/ship/rarity":
+                this.hieiShipEndpoint.rarity(hieiEndpointContext);
+                break;
+            case "/ship/hullType":
+                this.hieiShipEndpoint.hullType(hieiEndpointContext);
+                break;
+            case "/ship/shipClass":
+                this.hieiShipEndpoint.shipClass(hieiEndpointContext);
+                break;
+            case "/ship/nationality":
+                this.hieiShipEndpoint.nationality(hieiEndpointContext);
+                break;
+            case "/equip/search":
+                this.hieiEquipmentEndpoint.search(hieiEndpointContext);
+                break;
+            case "/equip/nationality":
+                this.hieiEquipmentEndpoint.nationality(hieiEndpointContext);
+                break;
+            case "/equip/category":
+                this.hieiEquipmentEndpoint.category(hieiEndpointContext);
         }
     }
 }

@@ -47,7 +47,7 @@ public class HieiUpdater {
                 }, this.hiei.cachedThreadPool)
                 .exceptionally(throwable -> {
                     this.hiei.hieiLogger.error(throwable);
-                    return null;
+                    return true;
                 });
     }
 
@@ -70,7 +70,7 @@ public class HieiUpdater {
                 }, this.hiei.cachedThreadPool)
                 .exceptionally(throwable -> {
                     this.hiei.hieiLogger.error(throwable);
-                    return null;
+                    return true;
                 });
     }
 
