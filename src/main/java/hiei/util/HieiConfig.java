@@ -13,6 +13,7 @@ public class HieiConfig {
     public final int threads;
     public final String routePrefix;
     public final String directory;
+    public final int checkUpdateInterval;
     public final int maxResults;
     public final int searchWeight;
     public final boolean privateRest;
@@ -29,6 +30,7 @@ public class HieiConfig {
             this.maxResults = config.containsKey("maxResults") ? config.getInteger("maxResults") : 5;
             this.searchWeight = config.containsKey("searchWeight") ? config.getInteger("searchWeight") : 75;
             this.privateRest = !config.containsKey("privateRest") || config.getBoolean("privateRest");
+            this.checkUpdateInterval = config.containsKey("checkUpdateInterval") ? config.getInteger("checkUpdateInterval") : 0;
         }
     }
 }

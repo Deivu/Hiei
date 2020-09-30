@@ -36,7 +36,7 @@ public class HieiUpdater {
                     } catch (Throwable throwable) {
                         throw new CompletionException(throwable);
                     }
-                }, this.hiei.cachedThreadPool)
+                }, this.hiei.singleThreadExecutor)
                 .thenApplyAsync(data -> {
                     Buffer buffer = this.hiei.hieiStore.getFileSystem().readFileBlocking(this.hiei.hieiStore.getDataDirectory() + this.hiei.hieiStore.getShipVersionFileName());
                     Gson gson = new Gson();
@@ -44,7 +44,7 @@ public class HieiUpdater {
                     if (current == null) return true;
                     current = current.getAsJsonObject();
                     return current.get("version-number") == null|| !data.get("version-number").getAsBigInteger().equals(current.get("version-number").getAsBigInteger());
-                }, this.hiei.cachedThreadPool)
+                }, this.hiei.singleThreadExecutor)
                 .exceptionally(throwable -> {
                     this.hiei.hieiLogger.error(throwable);
                     return true;
@@ -59,7 +59,7 @@ public class HieiUpdater {
                     } catch (Throwable throwable) {
                         throw new CompletionException(throwable);
                     }
-                }, this.hiei.cachedThreadPool)
+                }, this.hiei.singleThreadExecutor)
                 .thenApplyAsync(data -> {
                     Buffer buffer = this.hiei.hieiStore.getFileSystem().readFileBlocking(this.hiei.hieiStore.getDataDirectory() + this.hiei.hieiStore.getEquipmentVersionFileName());
                     Gson gson = new Gson();
@@ -67,7 +67,7 @@ public class HieiUpdater {
                     if (current == null) return true;
                     current = current.getAsJsonObject();
                     return current.get("version-number") == null|| !data.get("version-number").getAsBigInteger().equals(current.get("version-number").getAsBigInteger());
-                }, this.hiei.cachedThreadPool)
+                }, this.hiei.singleThreadExecutor)
                 .exceptionally(throwable -> {
                     this.hiei.hieiLogger.error(throwable);
                     return true;
