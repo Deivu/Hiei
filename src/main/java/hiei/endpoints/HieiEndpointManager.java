@@ -40,25 +40,18 @@ public class HieiEndpointManager {
                 return;
             }
             this.hiei.hieiLogger.info("Manual data update check authorized at /update endpoint, checking...");
-            if (this.hiei.hieiUpdater.shipDataNeedsUpdate().get()) {
+            if (!this.hiei.shipDataUpToDate()) {
                 this.hiei.hieiLogger.info("Ship data update available, updating...");
-                this.hiei.hieiStore.updateShipData();
-                this.hiei.hieiLogger.info("Local ship data up to date!");
-                this.hiei.hieiCache.updateShipCache(this.hiei.hieiStore.getLocalShipsData());
-                this.hiei.hieiLogger.info("Ship rest cache re-loaded!");
-            } else {
-                this.hiei.hieiLogger.info("Ship data is up to date!");
+                this.hiei.updateShips();
             }
-            if (this.hiei.hieiUpdater.equipmentDataNeedsUpdate().get()) {
+            this.hiei.hieiLogger.info("Ship data is up to date!");
+            if (!this.hiei.equipDataUpToDate()) {
                 this.hiei.hieiLogger.info("Equip data update available, updating...");
-                this.hiei.hieiStore.updateEquipmentData();
-                this.hiei.hieiLogger.info("Local equip data up to date!");
-                this.hiei.hieiCache.updateEquipCache(this.hiei.hieiStore.getLocalEquipmentsData());
-                this.hiei.hieiLogger.info("Equip rest cache re-loaded!");
-            } else {
-                this.hiei.hieiLogger.info("Equip data is up to date!");
+                this.hiei.updateEquips();
             }
+            this.hiei.hieiLogger.info("Equip data is up to date!");
             this.hiei.hieiLogger.info("Manual data update executed!");
+            response.end();
         } catch (Throwable throwable) {
             this.hiei.hieiLogger.error(throwable);
         }
@@ -108,6 +101,10 @@ public class HieiEndpointManager {
                 break;
             case "/equip/category":
                 this.hieiEquipmentEndpoint.category(hieiEndpointContext);
+                break;
+            default:
+                this.hiei.hieiLogger.info("Unknown endpoint: " + endpoint);
+                response.end();
         }
     }
 }

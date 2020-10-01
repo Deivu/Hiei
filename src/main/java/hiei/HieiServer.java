@@ -1,5 +1,6 @@
 package hiei;
 
+import com.google.gson.JsonObject;
 import hiei.data.HieiCache;
 import hiei.data.HieiStore;
 import hiei.data.HieiUpdater;
@@ -27,7 +28,6 @@ public class HieiServer {
     public final HieiCache hieiCache;
     public final HieiEndpointManager hieiEndpointManager;
     public final ScheduledExecutorService singleThreadScheduler;
-    public final ExecutorService singleThreadExecutor;
 
     private final HttpServer server;
     private final Router mainRouter;
@@ -44,7 +44,6 @@ public class HieiServer {
         this.hieiCache = new HieiCache();
         this.hieiEndpointManager = new HieiEndpointManager(this);
         this.singleThreadScheduler = Executors.newSingleThreadScheduledExecutor();
-        this.singleThreadExecutor = Executors.newSingleThreadExecutor();
         this.server = this.vertx.createHttpServer();
         this.mainRouter = Router.router(vertx);
         this.apiRoutes = Router.router(vertx);
@@ -81,24 +80,20 @@ public class HieiServer {
 
     public HieiServer startServer() throws ExecutionException, InterruptedException {
         this.hieiLogger.info("Pre-start server checks initializing....");
-        if (this.hieiUpdater.shipDataNeedsUpdate().get()) {
+        if (!this.shipDataUpToDate()) {
             this.hieiLogger.info("Ship data update available, updating...");
-            this.hieiStore.updateShipData();
-            this.hieiLogger.info("Local ship data up to date!");
+            this.updateShips();
         } else {
-            this.hieiLogger.info("Ship data is up to date!");
+            this.hieiCache.updateShipCache(this.hieiStore.getLocalShipsData());
         }
-        if (this.hieiUpdater.equipmentDataNeedsUpdate().get()) {
+        this.hieiLogger.info("Ship data is up to date!");
+        if (!this.equipDataUpToDate()) {
             this.hieiLogger.info("Equip data update available, updating...");
-            this.hieiStore.updateEquipmentData();
-            this.hieiLogger.info("Local equip data up to date!");
+            this.updateEquips();
         } else {
-            this.hieiLogger.info("Equip data is up to date!");
+            this.hieiCache.updateEquipCache(this.hieiStore.getLocalEquipmentsData());
         }
-        this.hieiCache.updateShipCache(this.hieiStore.getLocalShipsData());
-        this.hieiLogger.info("Ship rest cache loaded!");
-        this.hieiCache.updateEquipCache(this.hieiStore.getLocalEquipmentsData());
-        this.hieiLogger.info("Equip rest cache loaded!");
+        this.hieiLogger.info("Equip data is up to date!");
         server.requestHandler(this.mainRouter).listen(this.hieiConfig.port);
         this.hieiLogger.info("Kongō class second ship, Hiei is ready! Awaiting orders at port: " + this.hieiConfig.port);
         return this;
@@ -113,27 +108,41 @@ public class HieiServer {
         this.hieiLogger.info("Automatic update check is now set. Set to run every " + this.hieiConfig.checkUpdateInterval + " hour(s)");
     }
 
+    public boolean shipDataUpToDate() throws ExecutionException, InterruptedException {
+        JsonObject remote = this.hieiUpdater.fetchShipVersionData().get();
+        JsonObject local = this.hieiStore.getLocalShipVersion();
+        return remote.get("version-number").getAsString().equals(local.get("version-number").getAsString());
+    }
+
+    public boolean equipDataUpToDate() throws ExecutionException, InterruptedException {
+        JsonObject remote = this.hieiUpdater.fetchEquipmentVersionData().get();
+        JsonObject local = this.hieiStore.getLocalEquipVersion();
+        return remote.get("version-number").getAsString().equals(local.get("version-number").getAsString());
+    }
+
+    public void updateShips() throws ExecutionException, InterruptedException {
+        this.hieiStore.updateShipData();
+        this.hieiCache.updateShipCache(this.hieiStore.getLocalShipsData());
+    }
+
+    public void updateEquips() throws ExecutionException, InterruptedException {
+        this.hieiStore.updateEquipmentData();
+        this.hieiCache.updateEquipCache(this.hieiStore.getLocalEquipmentsData());
+    }
+
     private void executeTask() {
         try {
             this.hieiLogger.info("Automatic update check starting...");
-            if (this.hieiUpdater.shipDataNeedsUpdate().get()) {
+            if (!this.shipDataUpToDate()) {
                 this.hieiLogger.info("Ship data update available, updating...");
-                this.hieiStore.updateShipData();
-                this.hieiLogger.info("Local ship data up to date!");
-                this.hieiCache.updateShipCache(this.hieiStore.getLocalShipsData());
-                this.hieiLogger.info("Ship rest cache re-loaded!");
-            } else {
-                this.hieiLogger.info("Ship data is up to date!");
+                this.updateShips();
             }
-            if (this.hieiUpdater.equipmentDataNeedsUpdate().get()) {
+            this.hieiLogger.info("Ship data is up to date!");
+            if (!this.equipDataUpToDate()) {
                 this.hieiLogger.info("Equip data update available, updating...");
-                this.hieiStore.updateEquipmentData();
-                this.hieiLogger.info("Local equip data up to date!");
-                this.hieiCache.updateEquipCache(this.hieiStore.getLocalEquipmentsData());
-                this.hieiLogger.info("Equip rest cache re-loaded!");
-            } else {
-                this.hieiLogger.info("Equip data is up to date!");
+                this.updateEquips();
             }
+            this.hieiLogger.info("Equip data is up to date!");
             this.hieiLogger.info("Automatic update check executed!");
         } catch (Throwable throwable) {
             this.hieiLogger.error(throwable);

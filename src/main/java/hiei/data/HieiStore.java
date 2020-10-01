@@ -8,21 +8,17 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutionException;
 
 public class HieiStore {
     private final HieiServer hiei;
     private final String[] files;
     private final String dataDirectory;
 
-    private boolean isShipsUpdating;
-    private boolean isEquipsUpdating;
-
     public HieiStore(HieiServer hiei) {
         this.hiei = hiei;
         this.files = new String[]{"ship-version.json", "equipment-version.json", "ships.json", "equipments.json"};
         this.dataDirectory = this.hiei.hieiConfig.directory + "data/";
-        this.isEquipsUpdating = false;
-        this.isEquipsUpdating = false;
         if (!this.getFileSystem().existsBlocking(this.dataDirectory)) {
             this.getFileSystem().mkdirBlocking(this.dataDirectory);
             this.hiei.hieiLogger.debug("Created '.data/' directory because it doesn't exist");
@@ -37,8 +33,6 @@ public class HieiStore {
 
     public FileSystem getFileSystem() { return this.hiei.vertx.fileSystem(); }
 
-    public String getDataDirectory() { return this.dataDirectory; }
-
     public String getShipVersionFileName() { return this.files[0]; }
 
     public String getEquipmentVersionFileName() { return this.files[1]; }
@@ -48,48 +42,52 @@ public class HieiStore {
     public String getEquipmentDataFileName() { return this.files[3]; }
 
     public JsonArray getLocalShipsData() {
-        Buffer buffer = this.getFileSystem().readFileBlocking(this.dataDirectory + this.getShipDataFileName());
-        return new Gson().fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonArray.class);
+        Buffer buffer = this.getFileSystem()
+                .readFileBlocking(this.dataDirectory + this.getShipDataFileName());
+        return new Gson()
+                .fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonArray.class);
     }
 
     public JsonArray getLocalEquipmentsData() {
-        Buffer buffer = this.getFileSystem().readFileBlocking(this.dataDirectory + this.getEquipmentDataFileName());
-        return new Gson().fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonArray.class);
+        Buffer buffer = this.getFileSystem()
+                .readFileBlocking(this.dataDirectory + this.getEquipmentDataFileName());
+        return new Gson()
+                .fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonArray.class);
     }
 
-    public void updateShipData() {
-        try {
-            if (this.isShipsUpdating) {
-                this.hiei.hieiLogger.debug("Tried to update ship data, but a thread is already updating it");
-                return;
-            }
-            this.isShipsUpdating = true;
-            JsonObject remoteVersion = this.hiei.hieiUpdater.fetchShipVersionData().get();
-            JsonArray remoteShips = this.hiei.hieiUpdater.fetchShipData().get();
-            this.getFileSystem().writeFileBlocking(this.getDataDirectory() + this.getShipVersionFileName(), Buffer.buffer(remoteVersion.toString()));
-            this.getFileSystem().writeFileBlocking(this.getDataDirectory() + this.getShipDataFileName(), Buffer.buffer(remoteShips.toString()));
-        } catch (Throwable throwable) {
-            this.hiei.hieiLogger.error(throwable);
-        } finally {
-            this.isShipsUpdating = false;
-        }
+    public JsonObject getLocalShipVersion() {
+        Buffer buffer = this.getFileSystem()
+                .readFileBlocking(this.dataDirectory + this.getShipVersionFileName());
+        JsonObject data = new Gson()
+                .fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonObject.class);
+        if (data == null || data.get("version-number") == null) return new JsonObject();
+        return data;
     }
 
-    public void updateEquipmentData() {
-        try {
-            if (this.isEquipsUpdating) {
-                this.hiei.hieiLogger.debug("Tried to update equipment data, but a thread is already updating it");
-                return;
-            }
-            this.isEquipsUpdating = true;
-            JsonObject remoteVersion = this.hiei.hieiUpdater.fetchEquipmentVersionData().get();
-            JsonArray remoteEquips = this.hiei.hieiUpdater.fetchEquipmentData().get();
-            this.getFileSystem().writeFileBlocking(this.getDataDirectory() + this.getEquipmentVersionFileName(), Buffer.buffer(remoteVersion.toString()));
-            this.getFileSystem().writeFileBlocking(this.getDataDirectory() + this.getEquipmentDataFileName(), Buffer.buffer(remoteEquips.toString()));
-        } catch (Throwable throwable) {
-            this.hiei.hieiLogger.error(throwable);
-        } finally {
-            this.isEquipsUpdating = false;
-        }
+    public JsonObject getLocalEquipVersion() {
+        Buffer buffer = this.getFileSystem()
+                .readFileBlocking(this.dataDirectory + this.getEquipmentVersionFileName());
+        JsonObject data = new Gson()
+                .fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonObject.class);
+        if (data == null || data.get("version-number") == null) return new JsonObject();
+        return data;
+    }
+
+    public void updateShipData() throws ExecutionException, InterruptedException {
+        Buffer remoteVersion = Buffer.buffer(this.hiei.hieiUpdater.fetchShipVersionData().get().toString());
+        Buffer remoteShips = Buffer.buffer(this.hiei.hieiUpdater.fetchShipData().get().toString());
+        this.getFileSystem()
+                .writeFileBlocking(this.dataDirectory + this.getShipVersionFileName(), remoteVersion);
+        this.getFileSystem()
+                .writeFileBlocking(this.dataDirectory + this.getShipDataFileName(), remoteShips);
+    }
+
+    public void updateEquipmentData() throws ExecutionException, InterruptedException {
+        Buffer remoteVersion = Buffer.buffer(this.hiei.hieiUpdater.fetchEquipmentVersionData().get().toString());
+        Buffer remoteEquips = Buffer.buffer(this.hiei.hieiUpdater.fetchEquipmentData().get().toString());
+        this.getFileSystem()
+                .writeFileBlocking(this.dataDirectory + this.getEquipmentVersionFileName(), remoteVersion);
+        this.getFileSystem()
+                .writeFileBlocking(this.dataDirectory + this.getEquipmentDataFileName(), remoteEquips);
     }
 }
