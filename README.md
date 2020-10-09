@@ -18,7 +18,7 @@ The ShipGirl Project, Hiei; `(c) Azur Lane`
 
 ## Downloads
 
-🔗 ...
+🔗 https://github.com/Deivu/Hiei/releases
 
 ## Support
 
@@ -30,7 +30,7 @@ Ping or ask for `@Sāya#0113`
 
 ## How to host 
 
-> Download the latest version from Github Releases
+> Download the latest version from [Github Releases](https://github.com/Deivu/Hiei/releases)
 
 > Copy a config from [examples](https://github.com/Deivu/Hiei/tree/master/example) folder
 
