@@ -60,7 +60,11 @@ public class HieiStore {
                 .readFileBlocking(this.dataDirectory + this.getShipVersionFileName());
         JsonObject data = new Gson()
                 .fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonObject.class);
-        if (data == null || data.get("version-number") == null) return new JsonObject();
+        if (data == null || data.get("version-number") == null) {
+           JsonObject json = new JsonObject();
+           json.addProperty("version-number", "0");
+           return json;
+        }
         return data;
     }
 
@@ -69,7 +73,11 @@ public class HieiStore {
                 .readFileBlocking(this.dataDirectory + this.getEquipmentVersionFileName());
         JsonObject data = new Gson()
                 .fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonObject.class);
-        if (data == null || data.get("version-number") == null) return new JsonObject();
+        if (data == null || data.get("version-number") == null) {
+            JsonObject json = new JsonObject();
+            json.addProperty("version-number", "0");
+            return json;
+        }
         return data;
     }
 
