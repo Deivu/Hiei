@@ -30,9 +30,15 @@ Ping or ask for `@Sāya#0113`
 
 ## How to host 
 
-...
+> Download the latest version from Github Releases
+
+> Copy a config from [examples](https://github.com/Deivu/Hiei/tree/master/example) folder
+
+> Run the server by doing `java -jar hiei.jar`
+
 
 ## Rest Client Example
+> Node.JS (Javascript)
 ```js
 const Fetch = require('node-fetch');
 
