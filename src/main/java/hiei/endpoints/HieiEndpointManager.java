@@ -53,7 +53,7 @@ public class HieiEndpointManager {
             this.hiei.hieiLogger.info("Manual data update executed!");
             response.end();
         } catch (Throwable throwable) {
-            this.hiei.hieiLogger.error(throwable);
+            context.fail(throwable);
         }
     }
 
