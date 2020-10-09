@@ -1,0 +1,10 @@
+{
+  "pass": "1234",
+  "port": 1024,
+  "threads": 4,
+  "routePrefix": "/",
+  "privateRest": true,
+  "checkUpdateInterval": 0,
+  "maxResults": 5,
+  "searchWeight": 75
+}
