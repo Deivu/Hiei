@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 public class HieiLogger {
     private final Logger log = LoggerFactory.getLogger(HieiServer.class);
 
-    public void debug(String debug) { log.info(debug); }
+    public void debug(String debug) { log.debug(debug); }
 
     public void info(String info) { log.info(info); }
 

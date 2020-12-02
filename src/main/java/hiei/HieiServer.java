@@ -41,7 +41,7 @@ public class HieiServer {
         this.vertx = Vertx.vertx(new VertxOptions().setWorkerPoolSize(this.hieiConfig.threads));
         this.hieiStore = new HieiStore(this);
         this.hieiUpdater = new HieiUpdater(this);
-        this.hieiCache = new HieiCache();
+        this.hieiCache = new HieiCache(this);
         this.hieiEndpointManager = new HieiEndpointManager(this);
         this.singleThreadScheduler = Executors.newSingleThreadScheduledExecutor();
         this.server = this.vertx.createHttpServer();
