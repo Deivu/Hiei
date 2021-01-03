@@ -102,7 +102,7 @@ public class HieiServer {
         this.hieiLogger.info("Equip data is up to date!");
         this.hieiLogger.info("Blindly updating Barrages, Events, & Chapters.");
         JsonArray localBarrage = this.hieiStore.getLocalBarragesData();
-        if (localBarrage == null ) localBarrage = this.hieiStore.updateBarrageData();
+        if (localBarrage == null) localBarrage = this.hieiStore.updateBarrageData();
         this.hieiCache.updateBarrageCache(localBarrage);
         JsonArray localEvents = this.hieiStore.getLocalEventsData();
         if (localEvents == null) localEvents = this.hieiStore.updateEventData();
