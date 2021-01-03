@@ -10,11 +10,17 @@ public class HieiEndpointManager {
     private final HieiServer hiei;
     private final HieiShipEndpoint hieiShipEndpoint;
     private final HieiEquipmentEndpoint hieiEquipmentEndpoint;
+    private final HieiBarrageEndpoint hieiBarrageEndpoint;
+    private final HieiEventEndpoint hieiEventEndpoint;
+    private final HieiChapterEndpoint hieiChapterEndpoint;
 
     public HieiEndpointManager(HieiServer hiei) {
         this.hiei = hiei;
         this.hieiShipEndpoint = new HieiShipEndpoint(this.hiei);
         this.hieiEquipmentEndpoint = new HieiEquipmentEndpoint(this.hiei);
+        this.hieiBarrageEndpoint = new HieiBarrageEndpoint(this.hiei);
+        this.hieiEventEndpoint = new HieiEventEndpoint(this.hiei);
+        this.hieiChapterEndpoint = new HieiChapterEndpoint(this.hiei);
     }
 
     public void executeFail(RoutingContext context) {
@@ -40,16 +46,21 @@ public class HieiEndpointManager {
                 return;
             }
             this.hiei.hieiLogger.info("Manual data update check authorized at /update endpoint, checking...");
-            if (!this.hiei.shipDataUpToDate()) {
+            if (this.hiei.shipNeedsUpdate()) {
                 this.hiei.hieiLogger.info("Ship data update available, updating...");
                 this.hiei.updateShips();
             }
             this.hiei.hieiLogger.info("Ship data is up to date!");
-            if (!this.hiei.equipDataUpToDate()) {
+            if (this.hiei.equipNeedsUpdate()) {
                 this.hiei.hieiLogger.info("Equip data update available, updating...");
                 this.hiei.updateEquips();
             }
             this.hiei.hieiLogger.info("Equip data is up to date!");
+            this.hiei.hieiLogger.info("Blindly updating Barrages, Events, & Chapters.");
+            this.hiei.updateBarrages();
+            this.hiei.updateEvents();
+            this.hiei.updateChapters();
+            this.hiei.hieiLogger.info("Barrages, Events, & Chapters data updated!");
             this.hiei.hieiLogger.info("Manual data update executed!");
             response.end();
         } catch (Throwable throwable) {
@@ -101,6 +112,21 @@ public class HieiEndpointManager {
                 break;
             case "/equip/category":
                 this.hieiEquipmentEndpoint.category(hieiEndpointContext);
+                break;
+            case "/barrage/searchBarrageByName":
+                this.hieiBarrageEndpoint.searchBarrageByName(hieiEndpointContext);
+                break;
+            case "/barrage/searchBarrageByShip":
+                this.hieiBarrageEndpoint.searchBarrageByShipName(hieiEndpointContext);
+                break;
+            case "/event/search":
+                this.hieiEventEndpoint.search(hieiEndpointContext);
+                break;
+            case "/chapter/code":
+                this.hieiChapterEndpoint.code(hieiEndpointContext);
+                break;
+            case "/chapter/search":
+                this.hieiChapterEndpoint.search(hieiEndpointContext);
                 break;
             default:
                 this.hiei.hieiLogger.info("Unknown endpoint: " + endpoint);

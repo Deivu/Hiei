@@ -1,5 +1,6 @@
 package hiei.endpoints;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import hiei.HieiServer;
@@ -21,7 +22,7 @@ public class HieiShipEndpoint {
                 .collect(Collectors.toList());
         JsonArray json = new JsonArray();
         for (HieiShip obj : data) json.add(obj.data);
-        context.response.end(json.toString());
+        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(json));
     }
 
     public void shipClass(HieiEndpointContext context) {
@@ -31,7 +32,7 @@ public class HieiShipEndpoint {
                 .collect(Collectors.toList());
         JsonArray json = new JsonArray();
         for (HieiShip obj : data) json.add(obj.data);
-        context.response.end(json.toString());
+        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(json));
     }
 
     public void hullType(HieiEndpointContext context) {
@@ -41,7 +42,7 @@ public class HieiShipEndpoint {
                 .collect(Collectors.toList());
         JsonArray json = new JsonArray();
         for (HieiShip obj : data) json.add(obj.data);
-        context.response.end(json.toString());
+        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(json));
     }
 
     public void rarity(HieiEndpointContext context) {
@@ -51,16 +52,19 @@ public class HieiShipEndpoint {
                 .collect(Collectors.toList());
         JsonArray json = new JsonArray();
         for (HieiShip obj : data) json.add(obj.data);
-        context.response.end(json.toString());
+        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(json));
     }
 
     public void id(HieiEndpointContext context) {
-        List<HieiShip> data = this.hiei.hieiCache.ships.stream()
+        HieiShip data = this.hiei.hieiCache.ships.stream()
                 .filter(ship -> ship.id.equals(context.queryString))
-                .collect(Collectors.toList());
-        JsonObject json = new JsonObject();
-        if (!data.isEmpty()) json = data.get(0).data;
-        context.response.end(json.toString());
+                .findFirst()
+                .orElse(null);
+        if (data == null) {
+            context.response.end(new JsonObject().toString());
+            return;
+        }
+        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(data));
     }
 
     public void search(HieiEndpointContext context) {
@@ -73,6 +77,6 @@ public class HieiShipEndpoint {
                 .collect(Collectors.toList());
         JsonArray json = new JsonArray();
         for (HieiShip obj : data) json.add(obj.data);
-        context.response.end(data.toString());
+        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(json));
     }
 }

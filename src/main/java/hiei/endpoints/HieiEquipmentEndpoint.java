@@ -1,11 +1,11 @@
 package hiei.endpoints;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import hiei.HieiServer;
 import hiei.struct.HieiEndpointContext;
 import hiei.struct.HieiEquip;
 import hiei.struct.HieiSearchResult;
-import hiei.struct.HieiShip;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class HieiEquipmentEndpoint {
                 .collect(Collectors.toList());
         JsonArray json = new JsonArray();
         for (HieiEquip obj : data) json.add(obj.data);
-        context.response.end(json.toString());
+        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(json));
     }
 
     public void nationality(HieiEndpointContext context) {
@@ -33,7 +33,7 @@ public class HieiEquipmentEndpoint {
                 .collect(Collectors.toList());
         JsonArray json = new JsonArray();
         for (HieiEquip obj : data) json.add(obj.data);
-        context.response.end(json.toString());
+        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(json));
     }
 
     public void search(HieiEndpointContext context) {
@@ -46,6 +46,6 @@ public class HieiEquipmentEndpoint {
                 .collect(Collectors.toList());
         JsonArray json = new JsonArray();
         for (HieiEquip obj : data) json.add(obj.data);
-        context.response.end(data.toString());
+        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(json));
     }
 }

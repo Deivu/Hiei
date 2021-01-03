@@ -1,5 +1,6 @@
 package hiei;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import hiei.data.HieiCache;
 import hiei.data.HieiStore;
@@ -56,7 +57,12 @@ public class HieiServer {
                 "/ship/nationality",
                 "/equip/search",
                 "/equip/nationality",
-                "/equip/category"
+                "/equip/category",
+                "/barrage/searchBarrageByName",
+                "/barrage/searchBarrageByShip",
+                "/event/search",
+                "/chapter/code",
+                "/chapter/search"
         };
     }
 
@@ -80,20 +86,31 @@ public class HieiServer {
 
     public HieiServer startServer() throws ExecutionException, InterruptedException {
         this.hieiLogger.info("Pre-start server checks initializing....");
-        if (!this.shipDataUpToDate()) {
+        if (this.shipNeedsUpdate()) {
             this.hieiLogger.info("Ship data update available, updating...");
             this.updateShips();
         } else {
             this.hieiCache.updateShipCache(this.hieiStore.getLocalShipsData());
         }
         this.hieiLogger.info("Ship data is up to date!");
-        if (!this.equipDataUpToDate()) {
+        if (this.equipNeedsUpdate()) {
             this.hieiLogger.info("Equip data update available, updating...");
             this.updateEquips();
         } else {
             this.hieiCache.updateEquipCache(this.hieiStore.getLocalEquipmentsData());
         }
         this.hieiLogger.info("Equip data is up to date!");
+        this.hieiLogger.info("Blindly updating Barrages, Events, & Chapters.");
+        JsonArray localBarrage = this.hieiStore.getLocalBarragesData();
+        if (localBarrage == null ) localBarrage = this.hieiStore.updateBarrageData();
+        this.hieiCache.updateBarrageCache(localBarrage);
+        JsonArray localEvents = this.hieiStore.getLocalEventsData();
+        if (localEvents == null) localEvents = this.hieiStore.updateEventData();
+        this.hieiCache.updateEventCache(localEvents);
+        JsonArray localChapters = this.hieiStore.getLocalChaptersData();
+        if (localChapters == null) localChapters = this.hieiStore.updateChapterData();
+        this.hieiCache.updateChapterCache(localChapters);
+        this.hieiLogger.info("Barrages, Events, & Chapters data updated!");
         server.requestHandler(this.mainRouter).listen(this.hieiConfig.port);
         this.hieiLogger.info("Kongō class second ship, Hiei is ready! Awaiting orders at port: " + this.hieiConfig.port);
         return this;
@@ -108,41 +125,56 @@ public class HieiServer {
         this.hieiLogger.info("Automatic update check is now set. Set to run every " + this.hieiConfig.checkUpdateInterval + " hour(s)");
     }
 
-    public boolean shipDataUpToDate() throws ExecutionException, InterruptedException {
+    public boolean shipNeedsUpdate() throws ExecutionException, InterruptedException {
         JsonObject remote = this.hieiUpdater.fetchShipVersionData().get();
         JsonObject local = this.hieiStore.getLocalShipVersion();
-        return remote.get("version-number").getAsString().equals(local.get("version-number").getAsString());
+        return !remote.get("version-number").getAsString().equals(local.get("version-number").getAsString());
     }
 
-    public boolean equipDataUpToDate() throws ExecutionException, InterruptedException {
+    public boolean equipNeedsUpdate() throws ExecutionException, InterruptedException {
         JsonObject remote = this.hieiUpdater.fetchEquipmentVersionData().get();
         JsonObject local = this.hieiStore.getLocalEquipVersion();
-        return remote.get("version-number").getAsString().equals(local.get("version-number").getAsString());
+        return !remote.get("version-number").getAsString().equals(local.get("version-number").getAsString());
     }
 
     public void updateShips() throws ExecutionException, InterruptedException {
-        this.hieiStore.updateShipData();
-        this.hieiCache.updateShipCache(this.hieiStore.getLocalShipsData());
+        this.hieiCache.updateShipCache(this.hieiStore.updateShipData());
     }
 
     public void updateEquips() throws ExecutionException, InterruptedException {
-        this.hieiStore.updateEquipmentData();
-        this.hieiCache.updateEquipCache(this.hieiStore.getLocalEquipmentsData());
+        this.hieiCache.updateEquipCache(this.hieiStore.updateEquipmentData());
+    }
+
+    public void updateBarrages() throws ExecutionException, InterruptedException {
+        this.hieiCache.updateBarrageCache(this.hieiStore.updateBarrageData());
+    }
+
+    public void updateEvents() throws ExecutionException, InterruptedException {
+        this.hieiCache.updateEventCache(this.hieiStore.updateEventData());
+    }
+
+    public void updateChapters() throws ExecutionException, InterruptedException {
+        this.hieiCache.updateChapterCache(this.hieiStore.updateChapterData());
     }
 
     private void executeTask() {
         try {
             this.hieiLogger.info("Automatic update check starting...");
-            if (!this.shipDataUpToDate()) {
+            if (this.shipNeedsUpdate()) {
                 this.hieiLogger.info("Ship data update available, updating...");
                 this.updateShips();
             }
             this.hieiLogger.info("Ship data is up to date!");
-            if (!this.equipDataUpToDate()) {
+            if (this.equipNeedsUpdate()) {
                 this.hieiLogger.info("Equip data update available, updating...");
                 this.updateEquips();
             }
             this.hieiLogger.info("Equip data is up to date!");
+            this.hieiLogger.info("Blindly updating Barrages, Events, & Chapters.");
+            this.updateBarrages();
+            this.updateEvents();
+            this.updateChapters();
+            this.hieiLogger.info("Barrages, Events, & Chapters data updated!");
             this.hieiLogger.info("Automatic update check executed!");
         } catch (Throwable throwable) {
             this.hieiLogger.error(throwable);

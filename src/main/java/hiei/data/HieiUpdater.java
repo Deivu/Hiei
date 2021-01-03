@@ -14,18 +14,22 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 public class HieiUpdater {
-    private final HieiServer hiei;
     private final String versionData;
     private final String shipData;
     private final String equipmentData;
+    private final String barrageData;
+    private final String chaptersData;
+    private final String eventData;
     private final WebClient client;
 
     public HieiUpdater(HieiServer hiei) {
-        this.hiei = hiei;
         this.versionData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/version-info.json";
         this.shipData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/ships.json";
         this.equipmentData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/equipments.json";
-        this.client = WebClient.create(this.hiei.vertx, new WebClientOptions().setUserAgent("Hiei/" + this.hiei.version));
+        this.barrageData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/barrage.json";
+        this.chaptersData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/chapters.json";
+        this.eventData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/events.json";
+        this.client = WebClient.create(hiei.vertx, new WebClientOptions().setUserAgent("Hiei/" + hiei.version));
     }
 
     public CompletableFuture<JsonObject> fetchShipVersionData() {
@@ -95,6 +99,54 @@ public class HieiUpdater {
                     JsonArray parsedResponse = new JsonArray();
                     for (String key : unparsedResponse.keySet()) parsedResponse.add(unparsedResponse.getAsJsonObject(key));
                     result.complete(parsedResponse);
+                });
+        return result;
+    }
+
+    public CompletableFuture<JsonArray> fetchBarrageData() {
+        CompletableFuture<JsonArray> result = new CompletableFuture<>();
+        client.requestAbs(HttpMethod.GET, this.barrageData)
+                .send(response -> {
+                    if (response.failed()) {
+                        Throwable throwable = response.cause();
+                        if (throwable == null) throwable = new Throwable("Can't fetch remote barrage data");
+                        result.completeExceptionally(throwable);
+                        return;
+                    }
+                    result.complete(new Gson().fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonArray.class));
+                });
+        return result;
+    }
+
+    public CompletableFuture<JsonArray> fetchChaptersData() {
+        CompletableFuture<JsonArray> result = new CompletableFuture<>();
+        client.requestAbs(HttpMethod.GET, this.chaptersData)
+                .send(response -> {
+                    if (response.failed()) {
+                        Throwable throwable = response.cause();
+                        if (throwable == null) throwable = new Throwable("Can't fetch remote chapters data");
+                        result.completeExceptionally(throwable);
+                        return;
+                    }
+                    JsonObject unparsedResponse = new Gson().fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonObject.class);
+                    JsonArray parsedResponse = new JsonArray();
+                    for (String key : unparsedResponse.keySet()) parsedResponse.add(unparsedResponse.getAsJsonObject(key));
+                    result.complete(parsedResponse);
+                });
+        return result;
+    }
+
+    public CompletableFuture<JsonArray> fetchEventData() {
+        CompletableFuture<JsonArray> result = new CompletableFuture<>();
+        client.requestAbs(HttpMethod.GET, this.eventData)
+                .send(response -> {
+                    if (response.failed()) {
+                        Throwable throwable = response.cause();
+                        if (throwable == null) throwable = new Throwable("Can't fetch remote events data");
+                        result.completeExceptionally(throwable);
+                        return;
+                    }
+                    result.complete(new Gson().fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonArray.class));
                 });
         return result;
     }
