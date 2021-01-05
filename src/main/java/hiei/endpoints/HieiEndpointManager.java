@@ -78,13 +78,22 @@ public class HieiEndpointManager {
             return;
         }
         String query = request.getParam("q");
-        if (query == null) {
-            response.setStatusMessage("Bad Request");
-            context.fail(400);
-            return;
-        }
         response.putHeader("content-type", "application/json; charset=utf-8");
         HieiEndpointContext hieiEndpointContext = new HieiEndpointContext(context, request, response, query);
+        if (query == null) {
+            switch (endpoint) {
+                case "/ship/random":
+                    this.hieiShipEndpoint.random(hieiEndpointContext);
+                    break;
+                case "/equip/random":
+                    this.hieiEquipmentEndpoint.random(hieiEndpointContext);
+                    break;
+                default:
+                    this.hiei.hieiLogger.info("No matching no query string endpoint found for: " + endpoint);
+                    response.end();
+            }
+            return;
+        }
         switch (endpoint) {
             case "/ship/search":
                 this.hieiShipEndpoint.search(hieiEndpointContext);
@@ -129,7 +138,7 @@ public class HieiEndpointManager {
                 this.hieiChapterEndpoint.search(hieiEndpointContext);
                 break;
             default:
-                this.hiei.hieiLogger.info("Unknown endpoint: " + endpoint);
+                this.hiei.hieiLogger.info("No matching endpoint found for: " + endpoint);
                 response.end();
         }
     }

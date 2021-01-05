@@ -50,12 +50,14 @@ public class HieiServer {
         this.apiRoutes = Router.router(vertx);
         this.getEndpoints = new String[]{
                 "/ship/search",
+                "/ship/random",
                 "/ship/id",
                 "/ship/rarity",
                 "/ship/hullType",
                 "/ship/shipClass",
                 "/ship/nationality",
                 "/equip/search",
+                "/equip/random",
                 "/equip/nationality",
                 "/equip/category",
                 "/barrage/searchBarrageByName",

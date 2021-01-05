@@ -8,6 +8,7 @@ import hiei.struct.*;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class HieiShipEndpoint {
@@ -65,6 +66,12 @@ public class HieiShipEndpoint {
             return;
         }
         context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(data));
+    }
+
+    public void random(HieiEndpointContext context) {
+        int random = new Random().nextInt(this.hiei.hieiCache.ships.size() - 1);
+        HieiShip ship = this.hiei.hieiCache.ships.get(random);
+        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(ship.data));
     }
 
     public void search(HieiEndpointContext context) {
