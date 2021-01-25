@@ -6,7 +6,6 @@ import hiei.HieiServer;
 import hiei.struct.HieiEndpointContext;
 import hiei.struct.HieiEquip;
 import hiei.struct.HieiSearchResult;
-import hiei.struct.HieiShip;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 public class HieiEquipmentEndpoint {
-    private HieiServer hiei;
+    private final HieiServer hiei;
 
     public HieiEquipmentEndpoint(HieiServer hiei) { this.hiei = hiei; }
 
@@ -41,7 +40,7 @@ public class HieiEquipmentEndpoint {
     public void random(HieiEndpointContext context) {
         int random = new Random().nextInt(this.hiei.hieiCache.equips.size() - 1);
         HieiEquip equip = this.hiei.hieiCache.equips.get(random);
-        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(equip.data));
+        context.response.end(equip.toString());
     }
 
     public void search(HieiEndpointContext context) {

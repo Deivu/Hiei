@@ -64,8 +64,23 @@ public class HieiServer {
                 "/barrage/searchBarrageByShip",
                 "/event/search",
                 "/chapter/code",
-                "/chapter/search"
+                "/chapter/search",
+                "/voice/id"
         };
+    }
+
+    public HieiServer printWelcome() {
+        this.hieiLogger.info("\n" +
+                "______  _______       _____ \n" +
+                "___  / / /___(_)_____ ___(_)\n" +
+                "__  /_/ / __  / _  _ \\__  / \n" +
+                "_  __  /  _  /  /  __/_  /  \n" +
+                "/_/ /_/   /_/   \\___/ /_/   \n" +
+                "Version: " + this.version + "\n" +
+                "Available Endpoints: " + this.getEndpoints.length + "\n" +
+                "Developer: Deivu (https://github.com/Deivu)\n" +
+                "Repository: Hiei (https://github.com/Deivu/Hiei)");
+        return this;
     }
 
     public HieiServer buildRest() {
@@ -102,7 +117,7 @@ public class HieiServer {
             this.hieiCache.updateEquipCache(this.hieiStore.getLocalEquipmentsData());
         }
         this.hieiLogger.info("Equip data is up to date!");
-        this.hieiLogger.info("Blindly updating Barrages, Events, & Chapters.");
+        this.hieiLogger.info("Blindly updating Barrages, Events, Chapters, & Voice Lines.");
         JsonArray localBarrage = this.hieiStore.getLocalBarragesData();
         if (localBarrage == null) localBarrage = this.hieiStore.updateBarrageData();
         this.hieiCache.updateBarrageCache(localBarrage);
@@ -112,7 +127,10 @@ public class HieiServer {
         JsonArray localChapters = this.hieiStore.getLocalChaptersData();
         if (localChapters == null) localChapters = this.hieiStore.updateChapterData();
         this.hieiCache.updateChapterCache(localChapters);
-        this.hieiLogger.info("Barrages, Events, & Chapters data updated!");
+        JsonArray localVoices = this.hieiStore.getLocalVoiceData();
+        if (localVoices == null) localVoices = this.hieiStore.updateVoiceData();
+        this.hieiCache.updateVoiceCache(localVoices);
+        this.hieiLogger.info("Barrages, Events, Chapters, & Voice Lines data updated!");
         server.requestHandler(this.mainRouter).listen(this.hieiConfig.port);
         this.hieiLogger.info("Kongō class second ship, Hiei is ready! Awaiting orders at port: " + this.hieiConfig.port);
         return this;
@@ -159,6 +177,10 @@ public class HieiServer {
         this.hieiCache.updateChapterCache(this.hieiStore.updateChapterData());
     }
 
+    public void updateVoices() throws ExecutionException, InterruptedException {
+        this.hieiCache.updateVoiceCache(this.hieiStore.updateVoiceData());
+    }
+
     private void executeTask() {
         try {
             this.hieiLogger.info("Automatic update check starting...");
@@ -172,11 +194,12 @@ public class HieiServer {
                 this.updateEquips();
             }
             this.hieiLogger.info("Equip data is up to date!");
-            this.hieiLogger.info("Blindly updating Barrages, Events, & Chapters.");
+            this.hieiLogger.info("Blindly updating Barrages, Events, Chapters, & Voice Lines.");
             this.updateBarrages();
             this.updateEvents();
             this.updateChapters();
-            this.hieiLogger.info("Barrages, Events, & Chapters data updated!");
+            this.updateVoices();
+            this.hieiLogger.info("Barrages, Events, Chapters, & Voice Lines data updated!");
             this.hieiLogger.info("Automatic update check executed!");
         } catch (Throwable throwable) {
             this.hieiLogger.error(throwable);

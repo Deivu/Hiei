@@ -12,7 +12,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 public class HieiShipEndpoint {
-    private HieiServer hiei;
+    private final HieiServer hiei;
 
     public HieiShipEndpoint(HieiServer hiei) { this.hiei = hiei; }
 
@@ -65,13 +65,13 @@ public class HieiShipEndpoint {
             context.response.end(new JsonObject().toString());
             return;
         }
-        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(data));
+        context.response.end(data.toString());
     }
 
     public void random(HieiEndpointContext context) {
         int random = new Random().nextInt(this.hiei.hieiCache.ships.size() - 1);
-        HieiShip ship = this.hiei.hieiCache.ships.get(random);
-        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(ship.data));
+        HieiShip data = this.hiei.hieiCache.ships.get(random);
+        context.response.end(data.toString());
     }
 
     public void search(HieiEndpointContext context) {

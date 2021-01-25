@@ -1,5 +1,6 @@
 package hiei.struct;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -19,5 +20,10 @@ public class HieiKeyChapter {
             this.subChapters.add(new HieiSubChapter(key, data.get(key).getAsJsonObject()));
         }
         this.data = data.deepCopy();
+    }
+
+    @Override
+    public String toString() {
+        return new GsonBuilder().setPrettyPrinting().create().toJson(this.data);
     }
 }

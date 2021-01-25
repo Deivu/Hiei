@@ -1,5 +1,6 @@
 package hiei.struct;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 public class HieiEquip {
@@ -17,6 +18,6 @@ public class HieiEquip {
 
     @Override
     public String toString() {
-        return this.data.toString();
+        return new GsonBuilder().setPrettyPrinting().create().toJson(this.data);
     }
 }

@@ -18,7 +18,7 @@ public class HieiStore {
 
     public HieiStore(HieiServer hiei) {
         this.hiei = hiei;
-        this.files = new String[]{"ship-version.json", "equipment-version.json", "ships.json", "equipments.json", "barrage.json", "chapters.json", "event.json"};
+        this.files = new String[]{"ship-version.json", "equipment-version.json", "ships.json", "equipments.json", "barrage.json", "chapters.json", "event.json", "voice.json"};
         this.dataDirectory = this.hiei.hieiConfig.directory + "data/";
         if (!this.getFileSystem().existsBlocking(this.dataDirectory)) {
             this.getFileSystem().mkdirBlocking(this.dataDirectory);
@@ -48,6 +48,8 @@ public class HieiStore {
 
     public String getEventDataFileName() { return this.files[6]; }
 
+    public String getVoiceDataFileName() { return this.files[7]; }
+
     public JsonArray getLocalShipsData() {
         Buffer buffer = this.getFileSystem()
                 .readFileBlocking(this.dataDirectory + this.getShipDataFileName());
@@ -75,6 +77,13 @@ public class HieiStore {
         return new Gson()
                 .fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonArray.class);
     }
+    public JsonArray getLocalVoiceData() {
+        Buffer buffer = this.getFileSystem()
+                .readFileBlocking(this.dataDirectory + this.getVoiceDataFileName());
+        return new Gson()
+                .fromJson(buffer.toString(StandardCharsets.UTF_8.name()), JsonArray.class);
+    }
+
     public JsonArray getLocalChaptersData() {
         Buffer buffer = this.getFileSystem()
                 .readFileBlocking(this.dataDirectory + this.getChaptersDataFileName());
@@ -152,5 +161,13 @@ public class HieiStore {
         this.getFileSystem()
                 .writeFileBlocking(this.dataDirectory + this.getEventDataFileName(), Buffer.buffer(gson.toJson(events)));
         return events;
+    }
+
+    public JsonArray updateVoiceData() throws ExecutionException, InterruptedException  {
+        JsonArray voices = this.hiei.hieiUpdater.fetchVoiceData().get();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        this.getFileSystem()
+                .writeFileBlocking(this.dataDirectory + this.getVoiceDataFileName(), Buffer.buffer(gson.toJson(voices)));
+        return voices;
     }
 }

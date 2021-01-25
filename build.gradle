@@ -37,7 +37,7 @@ jar {
                 'Main-Class': 'hiei.HieiMain',
                 'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                 'Implementation-Title': 'Hiei',
-                'Implementation-Version': '0.0.3'
+                'Implementation-Version': '0.0.4'
         )
     }
 

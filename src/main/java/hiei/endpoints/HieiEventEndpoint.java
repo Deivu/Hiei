@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class HieiEventEndpoint {
-    private HieiServer hiei;
+    private final HieiServer hiei;
 
     public  HieiEventEndpoint(HieiServer hiei) { this.hiei = hiei; }
 

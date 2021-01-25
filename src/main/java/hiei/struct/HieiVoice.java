@@ -3,14 +3,12 @@ package hiei.struct;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
-public class HieiSubChapter {
-    public final String subChapter;
-    public final String name;
+public class HieiVoice {
+    public final String id;
     public final JsonObject data;
 
-    public HieiSubChapter(String count, JsonObject data) {
-        this.subChapter = count;
-        this.name = data.get("names").getAsJsonObject().get("en").getAsString();
+    public HieiVoice(String id, JsonObject data) {
+        this.id = id;
         this.data = data.deepCopy();
     }
 

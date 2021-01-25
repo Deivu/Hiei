@@ -1,5 +1,6 @@
 package hiei.struct;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -16,5 +17,10 @@ public class HieiBarrage {
         JsonArray ships = data.get("ships").getAsJsonArray();
         for (int i = 0; i < ships.size(); i++) this.ships.add(ships.get(i).getAsString());
         this.data = data.deepCopy();
+    }
+
+    @Override
+    public String toString() {
+        return new GsonBuilder().setPrettyPrinting().create().toJson(this.data);
     }
 }

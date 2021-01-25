@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class HieiBarrageEndpoint {
-    private HieiServer hiei;
+    private final HieiServer hiei;
 
     public HieiBarrageEndpoint(HieiServer hiei) { this.hiei = hiei; }
 

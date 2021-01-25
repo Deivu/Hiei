@@ -14,6 +14,7 @@ public class HieiCache {
     public final CopyOnWriteArrayList<HieiBarrage> barrage;
     public final CopyOnWriteArrayList<HieiEvent> events;
     public final CopyOnWriteArrayList<HieiKeyChapter> chapters;
+    public final CopyOnWriteArrayList<HieiVoice> voices;
 
     public HieiCache(HieiServer hiei) {
         this.hiei = hiei;
@@ -22,6 +23,7 @@ public class HieiCache {
         this.barrage = new CopyOnWriteArrayList<>();
         this.events = new CopyOnWriteArrayList<>();
         this.chapters = new CopyOnWriteArrayList<>();
+        this.voices = new CopyOnWriteArrayList<>();
     }
 
     public void updateShipCache(JsonArray data) {
@@ -114,7 +116,22 @@ public class HieiCache {
             try {
                 this.chapters.add(new HieiKeyChapter(Integer.toString(i + 1), chapter));
             } catch (Exception error) {
-                this.hiei.hieiLogger.error("Error Key Chapter; Number => " + (i + 1), error);
+                this.hiei.hieiLogger.error("Error Loading Key Chapter; Number => " + (i + 1), error);
+            }
+        }
+    }
+
+    public void updateVoiceCache(JsonArray data) {
+        if (data.size() == 0) return;
+        if (!this.voices.isEmpty()) this.voices.clear();
+        for (int i = 0; i < data.size(); i++) {
+            JsonObject voice = data.get(i).getAsJsonObject();
+            String id = voice.keySet().stream().findFirst().orElse("Unknown");
+            this.hiei.hieiLogger.debug("Loading Ship Voice; ID => " + id);
+            try {
+                this.voices.add(new HieiVoice(id, voice));
+            } catch (Exception error) {
+                this.hiei.hieiLogger.error("Error Loading Ship Voice; ID => " + id, error);
             }
         }
     }

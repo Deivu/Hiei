@@ -2,16 +2,16 @@ package hiei.data;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import hiei.HieiServer;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 public class HieiUpdater {
     private final String versionData;
@@ -20,6 +20,7 @@ public class HieiUpdater {
     private final String barrageData;
     private final String chaptersData;
     private final String eventData;
+    private final String voiceData;
     private final WebClient client;
 
     public HieiUpdater(HieiServer hiei) {
@@ -29,6 +30,7 @@ public class HieiUpdater {
         this.barrageData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/barrage.json";
         this.chaptersData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/chapters.json";
         this.eventData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/events.json";
+        this.voiceData = "https://raw.githubusercontent.com/AzurAPI/azurapi-js-setup/master/voice_lines.json";
         this.client = WebClient.create(hiei.vertx, new WebClientOptions().setUserAgent("Hiei/" + hiei.version));
     }
 
@@ -147,6 +149,27 @@ public class HieiUpdater {
                         return;
                     }
                     result.complete(new Gson().fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonArray.class));
+                });
+        return result;
+    }
+    public CompletableFuture<JsonArray> fetchVoiceData() {
+        CompletableFuture<JsonArray> result = new CompletableFuture<>();
+        client.requestAbs(HttpMethod.GET, this.voiceData)
+                .send(response -> {
+                    if (response.failed()) {
+                        Throwable throwable = response.cause();
+                        if (throwable == null) throwable = new Throwable("Can't fetch remote voice data");
+                        result.completeExceptionally(throwable);
+                        return;
+                    }
+                    JsonObject unparsedResponse = new Gson().fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonObject.class);
+                    JsonArray parsedResponse = new JsonArray();
+                    for (Map.Entry<String, JsonElement> entry : unparsedResponse.entrySet()) {
+                        JsonObject newObject = new JsonObject();
+                        newObject.add(entry.getKey(), entry.getValue());
+                        parsedResponse.add(newObject);
+                    }
+                    result.complete(parsedResponse);
                 });
         return result;
     }

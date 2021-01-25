@@ -13,6 +13,7 @@ public class HieiEndpointManager {
     private final HieiBarrageEndpoint hieiBarrageEndpoint;
     private final HieiEventEndpoint hieiEventEndpoint;
     private final HieiChapterEndpoint hieiChapterEndpoint;
+    private final HieiVoiceEndpoint hieiVoiceEndpoint;
 
     public HieiEndpointManager(HieiServer hiei) {
         this.hiei = hiei;
@@ -21,6 +22,7 @@ public class HieiEndpointManager {
         this.hieiBarrageEndpoint = new HieiBarrageEndpoint(this.hiei);
         this.hieiEventEndpoint = new HieiEventEndpoint(this.hiei);
         this.hieiChapterEndpoint = new HieiChapterEndpoint(this.hiei);
+        this.hieiVoiceEndpoint = new HieiVoiceEndpoint(this.hiei);
     }
 
     public void executeFail(RoutingContext context) {
@@ -56,11 +58,12 @@ public class HieiEndpointManager {
                 this.hiei.updateEquips();
             }
             this.hiei.hieiLogger.info("Equip data is up to date!");
-            this.hiei.hieiLogger.info("Blindly updating Barrages, Events, & Chapters.");
+            this.hiei.hieiLogger.info("Blindly updating Barrages, Events, Chapters, & Voice Lines");
             this.hiei.updateBarrages();
             this.hiei.updateEvents();
             this.hiei.updateChapters();
-            this.hiei.hieiLogger.info("Barrages, Events, & Chapters data updated!");
+            this.hiei.updateVoices();
+            this.hiei.hieiLogger.info("Barrages, Events, Chapters, & Voice Lines data updated!");
             this.hiei.hieiLogger.info("Manual data update executed!");
             response.end();
         } catch (Throwable throwable) {
@@ -79,7 +82,7 @@ public class HieiEndpointManager {
         }
         String query = request.getParam("q");
         response.putHeader("content-type", "application/json; charset=utf-8");
-        HieiEndpointContext hieiEndpointContext = new HieiEndpointContext(context, request, response, query);
+        HieiEndpointContext hieiEndpointContext = new HieiEndpointContext(request, response, query);
         if (query == null) {
             switch (endpoint) {
                 case "/ship/random":
@@ -136,6 +139,9 @@ public class HieiEndpointManager {
                 break;
             case "/chapter/search":
                 this.hieiChapterEndpoint.search(hieiEndpointContext);
+                break;
+            case "/voice/id":
+                this.hieiVoiceEndpoint.id(hieiEndpointContext);
                 break;
             default:
                 this.hiei.hieiLogger.info("No matching endpoint found for: " + endpoint);

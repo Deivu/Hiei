@@ -1,6 +1,5 @@
 package hiei.endpoints;
 
-import com.google.gson.GsonBuilder;
 import hiei.HieiServer;
 import hiei.struct.*;
 import com.google.gson.JsonObject;
@@ -10,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 public class HieiChapterEndpoint {
-    private HieiServer hiei;
+    private final HieiServer hiei;
 
     public HieiChapterEndpoint(HieiServer hiei) { this.hiei = hiei; }
 
@@ -27,7 +26,7 @@ public class HieiChapterEndpoint {
                  context.response.end(new JsonObject().toString());
                  return;
              }
-             context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(subData.data));
+             context.response.end(data.toString());
              return;
         }
         HieiKeyChapter data = this.hiei.hieiCache.chapters.get(Integer.parseInt(query[0]) - 1);
@@ -35,7 +34,7 @@ public class HieiChapterEndpoint {
             context.response.end(new JsonObject().toString());
             return;
         }
-        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(data.data));
+        context.response.end(data.toString());
     }
 
     public void search(HieiEndpointContext context) {
@@ -56,7 +55,7 @@ public class HieiChapterEndpoint {
                     .max(Comparator.comparing(HieiSearchResult::getScore))
                     .get()
                     .getSubChapter();
-            context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(subChapter.data));
+            context.response.end(subChapter.toString());
             return;
         }
          HieiSearchResult data = this.hiei.hieiCache.chapters.stream()
@@ -68,6 +67,6 @@ public class HieiChapterEndpoint {
             context.response.end(new JsonObject().toString());
             return;
         }
-        context.response.end(new GsonBuilder().setPrettyPrinting().create().toJson(data.getKeyChapter().data));
+        context.response.end(data.getKeyChapter().toString());
     }
 }
