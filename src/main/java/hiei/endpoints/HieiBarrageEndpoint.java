@@ -40,6 +40,7 @@ public class HieiBarrageEndpoint {
             }
         }
         List<HieiBarrage> data = results.stream()
+                .sorted((a, b) -> b.score - a.score)
                 .map(HieiSearchResult::getBarrage)
                 .limit(this.hiei.hieiConfig.maxResults)
                 .collect(Collectors.toList());
