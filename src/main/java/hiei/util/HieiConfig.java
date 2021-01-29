@@ -1,6 +1,10 @@
 package hiei.util;
 
 import hiei.HieiServer;
+import io.github.mightguy.spellcheck.symspell.api.StringDistance;
+import io.github.mightguy.spellcheck.symspell.common.QwertyDistance;
+import io.github.mightguy.spellcheck.symspell.common.SpellCheckSettings;
+import io.github.mightguy.spellcheck.symspell.common.WeightedDamerauLevenshteinDistance;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 
@@ -15,7 +19,7 @@ public class HieiConfig {
     public final String directory;
     public final int checkUpdateInterval;
     public final int maxResults;
-    public final int searchWeight;
+    public final double editDistance;
     public final boolean privateRest;
 
     public HieiConfig() throws IOException, URISyntaxException {
@@ -28,9 +32,13 @@ public class HieiConfig {
             this.threads = config.containsKey("threads") ? config.getInteger("threads") : Runtime.getRuntime().availableProcessors();
             this.routePrefix = config.containsKey("routePrefix") ? "/" + config.getString("routePrefix") : "/";
             this.maxResults = config.containsKey("maxResults") ? config.getInteger("maxResults") : 5;
-            this.searchWeight = config.containsKey("searchWeight") ? config.getInteger("searchWeight") : 75;
+            this.editDistance = config.containsKey("editDistance") ? config.getInteger("editDistance") : 6;
             this.privateRest = !config.containsKey("privateRest") || config.getBoolean("privateRest");
             this.checkUpdateInterval = config.containsKey("checkUpdateInterval") ? config.getInteger("checkUpdateInterval") : 0;
         }
+    }
+
+    public StringDistance getDistanceComparator() {
+        return new WeightedDamerauLevenshteinDistance(0.8f, 1.01f, 0.9f, 0.7f, new QwertyDistance());
     }
 }

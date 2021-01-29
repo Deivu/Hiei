@@ -5,8 +5,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import hiei.HieiServer;
 import hiei.struct.*;
-import me.xdrop.fuzzywuzzy.FuzzySearch;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -76,9 +77,9 @@ public class HieiShipEndpoint {
 
     public void search(HieiEndpointContext context) {
         List<HieiShip> data = this.hiei.hieiCache.ships.stream()
-                .map(ship -> new HieiSearchResult(FuzzySearch.weightedRatio(context.queryString, ship.name), ship))
-                .filter(result ->  result.score > this.hiei.hieiConfig.searchWeight)
-                .sorted((a, b) -> b.score - a.score)
+                .map(ship -> new HieiSearchResult(this.hiei, ship).analyzeScore(context.queryString))
+                .filter(result -> result.score <= this.hiei.hieiConfig.editDistance)
+                .sorted(Comparator.comparingDouble(a -> a.score))
                 .limit(this.hiei.hieiConfig.maxResults)
                 .map(HieiSearchResult::getShip)
                 .collect(Collectors.toList());

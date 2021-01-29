@@ -3,7 +3,6 @@ package hiei.endpoints;
 import hiei.HieiServer;
 import hiei.struct.*;
 import com.google.gson.JsonObject;
-import me.xdrop.fuzzywuzzy.FuzzySearch;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,7 +25,7 @@ public class HieiChapterEndpoint {
                  context.response.end(new JsonObject().toString());
                  return;
              }
-             context.response.end(data.toString());
+             context.response.end(subData.toString());
              return;
         }
         HieiKeyChapter data = this.hiei.hieiCache.chapters.get(Integer.parseInt(query[0]) - 1);
@@ -42,8 +41,8 @@ public class HieiChapterEndpoint {
             ArrayList<HieiSearchResult> searchResults = new ArrayList<>();
             for (HieiKeyChapter keyChapter : this.hiei.hieiCache.chapters) {
                 for (HieiSubChapter subChapter : keyChapter.subChapters) {
-                    HieiSearchResult result = new HieiSearchResult(FuzzySearch.weightedRatio(subChapter.name, context.queryString), subChapter);
-                    if (result.score < this.hiei.hieiConfig.searchWeight) continue;
+                    HieiSearchResult result = new HieiSearchResult(this.hiei, subChapter).analyzeScore(context.queryString);
+                    if (result.score > this.hiei.hieiConfig.editDistance) continue;
                     searchResults.add(result);
                 }
             }
@@ -51,18 +50,18 @@ public class HieiChapterEndpoint {
                 context.response.end(new JsonObject().toString());
                 return;
             }
-            HieiSubChapter subChapter = searchResults.stream()
-                    .max(Comparator.comparing(HieiSearchResult::getScore))
+            HieiSubChapter data = searchResults.stream()
+                    .min((a, b) -> (int) (b.score - a.score))
                     .get()
                     .getSubChapter();
-            context.response.end(subChapter.toString());
+            context.response.end(data.toString());
             return;
         }
          HieiSearchResult data = this.hiei.hieiCache.chapters.stream()
-                .map(keyChapter -> new HieiSearchResult(FuzzySearch.weightedRatio(keyChapter.name, context.queryString), keyChapter))
-                .filter(result ->  result.score > this.hiei.hieiConfig.searchWeight)
-                .max(Comparator.comparing(HieiSearchResult::getScore))
-                .orElse(null);
+                 .map(keyChapter -> new HieiSearchResult(this.hiei, keyChapter).analyzeScore(context.queryString))
+                 .filter(result -> result.score <= this.hiei.hieiConfig.editDistance)
+                 .min((a, b) -> (int) (b.score - a.score))
+                 .orElse(null);
         if (data == null ) {
             context.response.end(new JsonObject().toString());
             return;

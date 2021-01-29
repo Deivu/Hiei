@@ -6,8 +6,8 @@ import hiei.HieiServer;
 import hiei.struct.HieiEndpointContext;
 import hiei.struct.HieiEquip;
 import hiei.struct.HieiSearchResult;
-import me.xdrop.fuzzywuzzy.FuzzySearch;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -45,9 +45,9 @@ public class HieiEquipmentEndpoint {
 
     public void search(HieiEndpointContext context) {
         List<HieiEquip> data = this.hiei.hieiCache.equips.stream()
-                .map(equip -> new HieiSearchResult(FuzzySearch.weightedRatio(context.queryString, equip.name), equip))
-                .filter(result ->  result.score > this.hiei.hieiConfig.searchWeight)
-                .sorted((a, b) -> b.score - a.score)
+                .map(equip -> new HieiSearchResult(this.hiei, equip).analyzeScore(context.queryString))
+                .filter(result -> result.score <= this.hiei.hieiConfig.editDistance)
+                .sorted(Comparator.comparingDouble(a -> a.score))
                 .limit(this.hiei.hieiConfig.maxResults)
                 .map(HieiSearchResult::getEquip)
                 .collect(Collectors.toList());

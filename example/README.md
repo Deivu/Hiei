@@ -14,7 +14,7 @@
 
 > maxResults: Defaults to `5`. Returns how many results the api can return in one endpoint, provided if that endpoint returns an JSONarray
 
-> searchWeight: Defaults to `75`. The higher this is, the less forgiving the `search` endpoints for searching ships or equipments
+> editDistance: Defaults to `6`. The higher this is, the more forgiving `search` endpoints is
 
 ## config.json
 

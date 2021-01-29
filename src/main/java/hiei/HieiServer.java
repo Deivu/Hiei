@@ -8,6 +8,7 @@ import hiei.data.HieiUpdater;
 import hiei.endpoints.HieiEndpointManager;
 import hiei.util.HieiConfig;
 import hiei.util.HieiLogger;
+import io.github.mightguy.spellcheck.symspell.api.StringDistance;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpMethod;
@@ -28,6 +29,7 @@ public class HieiServer {
     public final HieiUpdater hieiUpdater;
     public final HieiCache hieiCache;
     public final HieiEndpointManager hieiEndpointManager;
+    public final StringDistance levenshteinDistance;
     public final ScheduledExecutorService singleThreadScheduler;
 
     private final HttpServer server;
@@ -48,6 +50,7 @@ public class HieiServer {
         this.server = this.vertx.createHttpServer();
         this.mainRouter = Router.router(vertx);
         this.apiRoutes = Router.router(vertx);
+        this.levenshteinDistance = this.hieiConfig.getDistanceComparator();
         this.getEndpoints = new String[]{
                 "/ship/search",
                 "/ship/random",

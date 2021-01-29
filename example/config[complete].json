@@ -6,5 +6,5 @@
   "privateRest": true,
   "checkUpdateInterval": 0,
   "maxResults": 5,
-  "searchWeight": 75
+  "editDistance": 6
 }
