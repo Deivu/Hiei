@@ -51,7 +51,7 @@ public class HieiChapterEndpoint {
                 return;
             }
             HieiSubChapter data = searchResults.stream()
-                    .min((a, b) -> (int) (b.score - a.score))
+                    .min(Comparator.comparingDouble(a -> a.score))
                     .get()
                     .getSubChapter();
             context.response.end(data.toString());
@@ -60,7 +60,7 @@ public class HieiChapterEndpoint {
          HieiSearchResult data = this.hiei.hieiCache.chapters.stream()
                  .map(keyChapter -> new HieiSearchResult(this.hiei, keyChapter).analyzeScore(context.queryString))
                  .filter(result -> result.score <= this.hiei.hieiConfig.editDistance)
-                 .min((a, b) -> (int) (b.score - a.score))
+                 .min(Comparator.comparingDouble(a -> a.score))
                  .orElse(null);
         if (data == null ) {
             context.response.end(new JsonObject().toString());
