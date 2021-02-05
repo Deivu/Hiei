@@ -42,7 +42,7 @@ public class HieiEndpointManager {
         HttpServerResponse response = context.response();
         try {
             String auth = request.getHeader("authorization");
-            if (!auth.equals(this.hiei.hieiConfig.pass)) {
+            if (auth == null || !auth.equals(this.hiei.hieiConfig.pass)) {
                 response.setStatusMessage("Unauthorized");
                 context.fail(401);
                 return;
@@ -75,10 +75,12 @@ public class HieiEndpointManager {
         HttpServerRequest request = context.request();
         HttpServerResponse response = context.response();
         String auth = request.getHeader("authorization");
-        if (this.hiei.hieiConfig.privateRest && !auth.equals(this.hiei.hieiConfig.pass)) {
-            response.setStatusMessage("Unauthorized");
-            context.fail(401);
-            return;
+        if (this.hiei.hieiConfig.privateRest) {
+            if (auth == null || !auth.equals(this.hiei.hieiConfig.pass)) {
+                response.setStatusMessage("Unauthorized");
+                context.fail(401);
+                return;
+            }
         }
         String query = request.getParam("q");
         response.putHeader("content-type", "application/json; charset=utf-8");

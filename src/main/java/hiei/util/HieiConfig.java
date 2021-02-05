@@ -1,10 +1,13 @@
 package hiei.util;
 
 import hiei.HieiServer;
+import io.github.mightguy.spellcheck.symspell.api.DataHolder;
 import io.github.mightguy.spellcheck.symspell.api.StringDistance;
+
 import io.github.mightguy.spellcheck.symspell.common.QwertyDistance;
 import io.github.mightguy.spellcheck.symspell.common.SpellCheckSettings;
 import io.github.mightguy.spellcheck.symspell.common.WeightedDamerauLevenshteinDistance;
+import io.github.mightguy.spellcheck.symspell.impl.InMemoryDataHolder;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 
