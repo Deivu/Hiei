@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 
 public class HieiConfig {
     public final String pass;
@@ -29,7 +30,7 @@ public class HieiConfig {
         File file = new File(HieiServer.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         this.directory = file.getPath().replace(file.getName(), "");
         try (InputStream is = new FileInputStream(this.directory + "config.json")) {
-            JsonObject config = new JsonObject(IOUtils.toString(is));
+            JsonObject config = new JsonObject(IOUtils.toString(is, Charset.defaultCharset()));
             this.pass = config.getString("pass");
             this.port = config.containsKey("port") ? config.getInteger("port") : 1024;
             this.threads = config.containsKey("threads") ? config.getInteger("threads") : Runtime.getRuntime().availableProcessors();
