@@ -97,10 +97,7 @@ public class HieiUpdater {
                         result.completeExceptionally(throwable);
                         return;
                     }
-                    JsonObject unparsedResponse = new Gson().fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonObject.class);
-                    JsonArray parsedResponse = new JsonArray();
-                    for (String key : unparsedResponse.keySet()) parsedResponse.add(unparsedResponse.getAsJsonObject(key));
-                    result.complete(parsedResponse);
+                    result.complete(new Gson().fromJson(response.result().bodyAsString(StandardCharsets.UTF_8.name()), JsonArray.class));
                 });
         return result;
     }
